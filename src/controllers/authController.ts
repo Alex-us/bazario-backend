@@ -1,3 +1,5 @@
+import { NextFunction, Request, Response } from 'express';
+
 import { AUTH_ERROR_MESSAGE, AUTH_SUCCESS_MESSAGE } from '../exceptions/constants';
 import { BadRequestError, UnauthorizedError } from '../exceptions/Error';
 import {
@@ -12,16 +14,17 @@ import {
   refreshUserToken,
   registerUser,
 } from '../services/userService';
-import { LoggedInUserData, NextFunction, Request, Response } from '../types/express';
+import { LoggedInUserData } from '../types/express';
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { name, email, password, deviceId } = req.body;
+    const { name, email, password, deviceId, ip } = req.body;
     const { accessToken, refreshToken } = await registerUser({
       name,
       email,
       password,
       deviceId,
+      ip,
     });
 
     setRefreshTokenCookie(res, refreshToken);

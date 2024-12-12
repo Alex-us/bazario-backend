@@ -12,6 +12,9 @@ export interface IUser extends Document {
   phoneVerificationCode?: string;
   active: boolean;
   name?: string;
+  ipAddresses: string[];
+  createdAt: Date;
+  lastLoginAt: Date;
   comparePassword(password: string): Promise<boolean>;
 }
 
@@ -20,12 +23,15 @@ const UserSchema = new Schema<IUser>({
   password: { type: String, required: true },
   googleId: { type: String },
   facebookId: { type: String },
-  phone: {type: String },
-  phoneVerified: {type: Boolean, required: true, default: false},
-  phoneVerificationCode: {type: String},
-  active: {type: Boolean, required: true, default: false},
-  name: {type: String},
-  activationToken: {type: String},
+  phone: { type: String },
+  phoneVerified: { type: Boolean, required: true, default: false },
+  phoneVerificationCode: { type: String },
+  active: { type: Boolean, required: true, default: false },
+  name: { type: String },
+  activationToken: { type: String },
+  ipAddresses: { type: [String], default: [] },
+  createdAt: { type: Date, default: Date.now() },
+  lastLoginAt: { type: Date },
 });
 
 UserSchema.pre<IUser>('save', async function (next) {

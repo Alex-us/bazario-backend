@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { checkSchema } from 'express-validator';
 
 import * as authController from '../controllers/authController';
-import authMiddleware from '../middleware/authMiddleware';
+import authMiddleware from '../middleware/authHandler';
+import extractIp from '../middleware/extractIp';
 import loginValidatorSchema from '../validators/loginSchema';
 import registerValidatorSchema from '../validators/registerSchema';
 import validationResultHandler from '../validators/validationResultHandler';
@@ -13,12 +14,14 @@ router.post(
   '/register',
   checkSchema(registerValidatorSchema, ['body']),
   validationResultHandler,
+  extractIp,
   authController.register
 );
 router.post(
   '/login',
   checkSchema(loginValidatorSchema),
   validationResultHandler,
+  extractIp,
   authController.login
 );
 router.post('/logout', authMiddleware, authController.logout);

@@ -14,23 +14,25 @@ export type registerUserProps = {
   email: string;
   password: string;
   deviceId: string;
+  ip?: string;
 };
 
 export type loginUserProps = {
   email: string;
   password: string;
   deviceId: string;
+  ip?: string;
 };
 
 export const registerUser = async (props: registerUserProps) => {
-  const { name, email, password, deviceId } = props;
+  const { name, email, password, deviceId, ip } = props;
   let user = await UserModel.findOne({ email });
 
   if (user) {
     throw new BadRequestError(AUTH_ERROR_MESSAGE.USER_EXISTS);
   }
 
-  user = await UserModel.create({ name, email, password });
+  user = await UserModel.create({ name, email, password, ipAddresses: [ip] });
   console.log('User created');
   const userId = user._id as string;
 
@@ -59,7 +61,7 @@ export const activateUser = async (id: string, activationToken: string) => {
 };
 
 export const loginUser = async (props: loginUserProps) => {
-  const { email, password, deviceId } = props;
+  const { email, password, deviceId, ip } = props;
   const user = await UserModel.findOne({ email });
 
   if (!user) {
@@ -71,6 +73,12 @@ export const loginUser = async (props: loginUserProps) => {
   if (!isPassMatched) {
     throw new BadRequestError(AUTH_ERROR_MESSAGE.INVALID_CREDENTIALS);
   }
+  if (ip && !user.ipAddresses.includes(ip)) {
+    user.ipAddresses.push(ip);
+  }
+
+  user.lastLoginAt = new Date();
+  await user.save();
   const userId = user._id as string;
   const refreshToken = await generateRefreshToken(userId, deviceId);
   const accessToken = generateAccessToken(userId, deviceId);

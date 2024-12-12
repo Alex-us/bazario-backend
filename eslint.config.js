@@ -57,7 +57,8 @@ export default tseslint.config(
       "no-trailing-spaces": [
         "error",
         { "ignoreComments": true}
-      ]
+      ],
+      "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
     },
   },
 )

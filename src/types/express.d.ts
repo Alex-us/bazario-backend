@@ -1,12 +1,15 @@
-import { Request as ExpressRequest, Response, NextFunction } from 'express';
+import 'express';
 
 export interface LoggedInUserData {
   id: string;
-  deviceId;
+  deviceId: string;
+  ip?: string;
 }
 
-export interface Request extends ExpressRequest {
-  user?: LoggedInUserData;
+declare global {
+  namespace Express {
+    interface Request {
+      user?: LoggedInUserData;
+    }
+  }
 }
-
-export { Response, NextFunction };

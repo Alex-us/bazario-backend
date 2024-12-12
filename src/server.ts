@@ -5,7 +5,7 @@ import express, { NextFunction } from 'express';
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 
-import errorMiddleware from './middleware/errorMiddleware';
+import errorMiddleware from './middleware/errorHandler';
 import getRedisClient from './redis/client';
 import authRoutes from './routes/authRoutes';
 //import './config/passport';
