@@ -3,16 +3,18 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { NextFunction } from 'express';
 import { Request, Response } from 'express';
-import mongoose from 'mongoose';
 
+import { connectMongo } from './database/mongoClient';
+import { connectRedis } from './database/redisClient';
 import errorMiddleware from './middleware/errorHandler';
-import getRedisClient from './redis/client';
+import requestLogger from './middleware/requestLogger';
 import authRoutes from './routes/authRoutes';
 //import './config/passport';
 
 dotenv.config();
 
 const app = express();
+app.use(requestLogger);
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
@@ -24,17 +26,9 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   errorMiddleware(err, req, res, next);
 });
 
-mongoose
-  .connect(process.env.MONGO_URI as string)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.log(err));
-
-getRedisClient()
-  .connect()
+connectMongo()
+  .then(connectRedis)
   .then(() => {
-    console.log('Connected to Redis');
-  })
-  .catch(error => console.error('Error connecting to Redis: ', error));
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  });

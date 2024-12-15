@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { AUTH_ERROR_MESSAGE, AUTH_SUCCESS_MESSAGE } from '../exceptions/constants';
-import { BadRequestError, UnauthorizedError } from '../exceptions/Error';
+import { AUTH_ERROR_MESSAGE, AUTH_SUCCESS_MESSAGE } from '../errors/constants';
+import { BadRequestError, UnauthorizedError } from '../errors/Error';
 import {
   clearRefreshTokenCookie,
   setRefreshTokenCookie,
@@ -49,7 +49,6 @@ export const activate = async (req: Request, res: Response, next: NextFunction) 
     await activateUser(userData.id, activationToken);
     res.json({ message: AUTH_SUCCESS_MESSAGE.OK });
   } catch (err) {
-    console.error(`Cannot activate user due to error: ${err}`);
     next(err);
   }
 };
@@ -65,7 +64,6 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     setRefreshTokenCookie(res, refreshToken);
     res.json({ token: accessToken });
   } catch (err) {
-    console.error(`Cannot login due to error: ${err}`);
     next(err);
   }
 };
@@ -94,7 +92,6 @@ export const refresh = async (req: Request, res: Response, next: NextFunction) =
     setRefreshTokenCookie(res, newRefreshToken);
     res.json({ token: accessToken });
   } catch (err) {
-    console.error('Cannot refresh token due to error: ', err);
     next(err);
   }
 };
@@ -109,7 +106,6 @@ export const logout = async (req: Request, res: Response, next: NextFunction) =>
     clearRefreshTokenCookie(res);
     res.json({ message: AUTH_SUCCESS_MESSAGE.OK });
   } catch (err) {
-    console.error('Error when logging out: ', err);
     next(err);
   }
 };

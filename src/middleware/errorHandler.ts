@@ -1,6 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { ApiError } from '../exceptions/Error';
+import { ApiError } from '../errors/Error';
+import { createTaggedLogger } from '../logger';
+import { LoggerTags } from '../logger/constants';
+
+const MODULE_NAME = 'error_middleware';
+const logger = createTaggedLogger([LoggerTags.EXPRESS, MODULE_NAME]);
 
 export default (
   err: Error,
@@ -8,7 +13,12 @@ export default (
   res: Response,
   _next: NextFunction
 ): Response | void => {
-  console.error(err);
+  logger.error('Express error', {
+    method: req.method,
+    url: req.originalUrl,
+    stack: err.stack,
+    error: err,
+  });
   if (err instanceof ApiError) {
     return res.status(err.statusCode).json({ message: err.message });
   }
