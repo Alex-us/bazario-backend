@@ -22,7 +22,11 @@ const logger = createLogger({
   transports: [new transports.Console()],
 });
 
-if (process.env.LOGGLY_TOKEN && process.env.LOGGLY_SUBDOMAIN) {
+if (
+  process.env.LOGGLY_TOKEN &&
+  process.env.LOGGLY_SUBDOMAIN &&
+  process.env.NODE_ENV === 'production'
+) {
   logger.add(
     new Loggly({
       token: process.env.LOGGLY_TOKEN,
