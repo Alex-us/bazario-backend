@@ -15,15 +15,7 @@ import {
 
 const MODULE_NAME = 'user_service';
 
-export type registerUserProps = {
-  name: string;
-  email: string;
-  password: string;
-  deviceId: string;
-  ip?: string;
-};
-
-export type loginUserProps = {
+export type credentialsData = {
   email: string;
   password: string;
   deviceId: string;
@@ -32,9 +24,9 @@ export type loginUserProps = {
 
 const logger = createTaggedLogger([LoggerTags.AUTH, MODULE_NAME]);
 
-export const registerUser = async (props: registerUserProps) => {
-  const { name, email, password, deviceId, ip } = props;
-  logger.info('Trying to register user', { name, email, ip });
+export const registerUser = async (props: credentialsData) => {
+  const { email, password, deviceId, ip } = props;
+  logger.info('Trying to register user', { email, ip });
   let user = await UserModel.findOne({ email });
 
   if (user) {
@@ -42,7 +34,7 @@ export const registerUser = async (props: registerUserProps) => {
     throw new BadRequestError(AUTH_ERROR_MESSAGE.USER_EXISTS);
   }
 
-  user = await UserModel.create({ name, email, password, ipAddresses: [ip] });
+  user = await UserModel.create({ email, password, ipAddresses: [ip] });
   logger.info('Created user in Db', { email, id: user._id });
   const userId = user._id as string;
 
@@ -79,7 +71,7 @@ export const activateUser = async (id: string, activationToken: string) => {
   logger.info('User activated', { id });
 };
 
-export const loginUser = async (props: loginUserProps) => {
+export const loginUser = async (props: credentialsData) => {
   const { email, password, deviceId, ip } = props;
   logger.info('Trying to login user', { email, deviceId, ip });
   const user = await UserModel.findOne({ email });
@@ -138,7 +130,7 @@ export const sendUserActivation = async (user: IUser) => {
 
   if (user.active) {
     logger.warn('User already activated', { id: user._id });
-    throw new Error(`User ${user.name} is already active`);
+    throw new Error(`User ${user.email} is already active`);
   }
 
   const activationToken = randomUUID();

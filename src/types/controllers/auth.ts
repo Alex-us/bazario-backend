@@ -1,3 +1,5 @@
+import { UserDTO } from '../models/User/types';
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -5,6 +7,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
+  user: UserDTO;
 }
 
 export interface RegisterRequest {
@@ -17,6 +20,7 @@ export interface RegisterRequest {
 
 export interface RegisterResponse {
   token: string;
+  user: UserDTO;
 }
 
 export interface ActivateUserRequest {
