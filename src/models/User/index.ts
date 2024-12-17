@@ -1,27 +1,29 @@
 import bcrypt from 'bcryptjs';
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-export interface IUser extends Document {
-  email: string;
-  password: string;
-  googleId?: string;
-  facebookId?: string;
-  phoneNumber?: string;
-  isPhoneConfirmed: boolean;
-  isEmailConfirmed: boolean;
-  userName?: string;
-  comparePassword(password: string): Promise<boolean>;
-}
+import { IUser } from '../../types/models/user';
 
 const UserSchema = new Schema<IUser>({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   googleId: { type: String },
   facebookId: { type: String },
-  phoneNumber: {type: String, unique: true},
-  isPhoneConfirmed: {type: Boolean, required: true, default: false},
-  isEmailConfirmed: {type: Boolean, required: true, default: false},
-  userName: {type: String}
+  phone: { type: String },
+  phoneVerified: { type: Boolean, required: true, default: false },
+  phoneVerificationCode: { type: String },
+  active: { type: Boolean, required: true, default: false },
+  firstName: { type: String },
+  lastName: { type: String },
+  activationToken: { type: String },
+  createdAt: { type: Date, default: Date.now() },
+  lastLoginAt: { type: Date },
+  confirmedDevices: [
+    {
+      deviceId: { type: String },
+      ip: { type: String },
+    },
+  ],
+  blockReason: { type: String },
 });
 
 UserSchema.pre<IUser>('save', async function (next) {
