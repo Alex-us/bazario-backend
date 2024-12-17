@@ -1,5 +1,4 @@
-import { IUser } from '../models/types/userTypes';
-import { UserDTO } from '../types/dto';
+import { IUser, UserDTO } from '../../types/models/user';
 
 export default (user: IUser): UserDTO => {
   return {

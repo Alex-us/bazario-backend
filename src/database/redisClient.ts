@@ -1,7 +1,7 @@
 import { createClient, RedisClientType } from 'redis';
 
+import { LoggerTags } from '../constants/logger';
 import { createTaggedLogger } from '../logger';
-import { LoggerTags } from '../logger/constants';
 
 const MODULE_NAME = 'redis';
 const logger = createTaggedLogger([LoggerTags.DB, MODULE_NAME]);

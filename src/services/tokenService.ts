@@ -1,20 +1,16 @@
 import { Response } from 'express';
 import jwt from 'jsonwebtoken';
 
-import { ACCESS_TOKEN_EXP, REFRESH_TOKEN_EXP } from '../constants';
-import { REFRESH_TOKEN_KEY_PREFIX } from '../database/constants';
+import { REFRESH_TOKEN_KEY_PREFIX } from '../constants/database';
+import { LoggerTags } from '../constants/logger';
+import { ACCESS_TOKEN_EXP, REFRESH_TOKEN_EXP } from '../constants/services/token';
 import { getRedisClient } from '../database/redisClient';
 import { createTaggedLogger } from '../logger';
-import { LoggerTags } from '../logger/constants';
-import { findUserById } from './userService';
+import { CognitoIdTokenPayload } from '../types/services/token';
+import { findUserById } from './authService';
 
 const MODULE_NAME = 'token_service';
 const logger = createTaggedLogger([LoggerTags.AUTH, MODULE_NAME]);
-
-export interface CognitoIdTokenPayload {
-  id: string;
-  deviceId: string;
-}
 
 const getRefreshTokenRedisKey = (userId: string, deviceId: string) => {
   return `${REFRESH_TOKEN_KEY_PREFIX}${userId}:${deviceId}`;

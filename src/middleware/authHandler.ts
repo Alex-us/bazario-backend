@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 
+import { LoggerTags } from '../constants/logger';
 import { UnauthorizedError } from '../errors/Error';
 import { createTaggedLogger } from '../logger';
-import { LoggerTags } from '../logger/constants';
 import { validateAccessTokenAndReturnUserData } from '../services/tokenService';
 
 const MODULE_NAME = 'auth_middleware';

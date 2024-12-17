@@ -1,26 +1,22 @@
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'node:crypto';
 
-import { AUTH_ERROR_MESSAGE } from '../errors/constants';
+import { AUTH_ERROR_MESSAGE } from '../constants/errors';
+import { LoggerTags } from '../constants/logger';
 import { BadRequestError, UnauthorizedError } from '../errors/Error';
 import { createTaggedLogger } from '../logger';
-import { LoggerTags } from '../logger/constants';
-import UserModel, { IUser } from '../models/User';
-import { sendActivationMail } from './emailService';
+import UserModel from '../models/User/';
+import getUserDTO from '../models/User/dto';
+import { UserBlockReasons, IUser } from '../types/models/user';
+import { credentialsData } from '../types/services/auth';
+import { sendActivationMail, sendEmail } from './emailService';
 import {
   deleteRefreshTokenFromDb,
   generateAccessToken,
   generateRefreshToken,
 } from './tokenService';
 
-const MODULE_NAME = 'user_service';
-
-export type credentialsData = {
-  email: string;
-  password: string;
-  deviceId: string;
-  ip?: string;
-};
+const MODULE_NAME = 'auth_service';
 
 const logger = createTaggedLogger([LoggerTags.AUTH, MODULE_NAME]);
 
@@ -34,9 +30,16 @@ export const registerUser = async (props: credentialsData) => {
     throw new BadRequestError(AUTH_ERROR_MESSAGE.USER_EXISTS);
   }
 
-  user = await UserModel.create({ email, password, ipAddresses: [ip] });
+  user = await UserModel.create({
+    email,
+    password,
+    confirmedDevices: [{ deviceId, ip }],
+    active: false,
+    blockReason: UserBlockReasons.UNCONFIRMED_EMAIL,
+  });
+
   logger.info('Created user in Db', { email, id: user._id });
-  const userId = user._id as string;
+  const userId = user._id.toString();
 
   // TODO: check email config and fix mailer transport error
   await sendUserActivation(user);
@@ -46,11 +49,12 @@ export const registerUser = async (props: credentialsData) => {
   return {
     refreshToken,
     accessToken,
+    user: getUserDTO(user),
   };
 };
 
 export const activateUser = async (id: string, activationToken: string) => {
-  logger.info('Trying to activate user', { id });
+  logger.info('Activating user', { id });
   const user = await UserModel.findById(id);
   if (!user) {
     logger.info('No user found', { id });
@@ -67,12 +71,13 @@ export const activateUser = async (id: string, activationToken: string) => {
 
   user.active = true;
   user.activationToken = undefined;
+  user.blockReason = undefined;
   await user.save();
   logger.info('User activated', { id });
 };
 
 export const loginUser = async (props: credentialsData) => {
-  const { email, password, deviceId, ip } = props;
+  const { email, password, deviceId, ip, userAgent } = props;
   logger.info('Trying to login user', { email, deviceId, ip });
   const user = await UserModel.findOne({ email });
 
@@ -87,19 +92,37 @@ export const loginUser = async (props: credentialsData) => {
     logger.info('Password does not match', { email });
     throw new BadRequestError(AUTH_ERROR_MESSAGE.INVALID_CREDENTIALS);
   }
-  if (ip && !user.ipAddresses.includes(ip)) {
-    user.ipAddresses.push(ip);
+
+  const existingDevice = user.confirmedDevices.find(
+    device => device.deviceId === deviceId && device.ip === ip
+  );
+
+  if (!existingDevice) {
+    logger.warn('User logged from unknown device', { email, deviceId, ip });
+
+    user.active = false;
+    user.activationToken = randomUUID();
+    user.blockReason = UserBlockReasons.NEW_DEVICE_LOGIN;
+
+    await sendEmail({
+      to: email,
+      type: user.blockReason,
+      ip,
+      token: user.activationToken,
+      userAgent,
+    });
   }
 
   user.lastLoginAt = new Date();
   await user.save();
-  const userId = user._id as string;
+  const userId = user._id.toString();
   const refreshToken = await generateRefreshToken(userId, deviceId);
   const accessToken = generateAccessToken(userId, deviceId);
   logger.info('User successfully logged-in', { email });
   return {
     refreshToken,
     accessToken,
+    user: getUserDTO(user),
   };
 };
 

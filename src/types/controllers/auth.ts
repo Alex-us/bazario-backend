@@ -1,8 +1,9 @@
-import { UserDTO } from '../models/User/types';
+import { UserDTO } from '../models/user';
 
 export interface LoginRequest {
   email: string;
   password: string;
+  deviceId: string;
 }
 
 export interface LoginResponse {

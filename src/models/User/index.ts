@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { Schema, model } from 'mongoose';
 
-import { IUser } from './types/userTypes';
+import { IUser } from '../../types/models/user';
 
 const UserSchema = new Schema<IUser>({
   email: { type: String, required: true, unique: true },

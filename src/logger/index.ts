@@ -2,37 +2,42 @@ import isEmpty from 'lodash/isEmpty';
 import { createLogger, format, transports, Logger } from 'winston';
 import { Loggly } from 'winston-loggly-bulk';
 
+const { combine, timestamp, errors, json, printf, colorize } = format;
+
+const consoleFormat = combine(
+  colorize(),
+  timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+  errors({ stack: true }),
+  printf(info => {
+    const { tags, timestamp, level, message, stack, ...rest } = info;
+    const tagsStr = tags
+      ? (tags as string[]).map((tag: string) => `[#${tag}]`).join(' ')
+      : '';
+    const data = isEmpty(rest) ? '' : `\n${JSON.stringify(rest)}`;
+    const logMessage = `${timestamp} [${level}] ${tagsStr}: ${message} ${data}`;
+    return stack ? `${logMessage}\n${stack}` : logMessage;
+  })
+);
+
+const logglyFormat = combine(
+  timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+  errors({ stack: true }),
+  json()
+);
+
 const logger = createLogger({
   level: 'info',
-  format: format.combine(
-    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    format.errors({ stack: true }),
-    format.json(),
-    format.colorize(),
-    format.printf(info => {
-      const { tags, timestamp, level, message, stack, ...rest } = info;
-      const tagsStr = tags
-        ? (tags as string[]).map((tag: string) => `[#${tag}]`).join(' ')
-        : '';
-      const data = isEmpty(rest) ? '' : `\n${JSON.stringify(rest)}`;
-      const logMessage = `${timestamp} [${level}] ${tagsStr}: ${message} ${data}`;
-      return stack ? `${logMessage}\n${stack}` : logMessage;
-    })
-  ),
-  transports: [new transports.Console()],
+  transports: [new transports.Console({ format: consoleFormat })],
 });
 
-if (
-  process.env.LOGGLY_TOKEN &&
-  process.env.LOGGLY_SUBDOMAIN &&
-  process.env.NODE_ENV === 'production'
-) {
+if (process.env.NODE_ENV === 'production') {
   logger.add(
     new Loggly({
-      token: process.env.LOGGLY_TOKEN,
-      subdomain: process.env.LOGGLY_SUBDOMAIN,
+      token: String(process.env.LOGGLY_TOKEN),
+      subdomain: String(process.env.LOGGLY_SUBDOMAIN),
       tags: ['Backend'],
       json: true,
+      format: logglyFormat,
     })
   );
 }

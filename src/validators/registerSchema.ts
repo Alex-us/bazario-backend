@@ -1,10 +1,5 @@
-import { AUTH_ERROR_MESSAGE } from '../errors/constants';
-import {
-  NAME_MAX_LENGTH,
-  NAME_MIN_LENGTH,
-  PASSWORD_MAX_LENGTH,
-  PASSWORD_MIN_LENGTH,
-} from './constants';
+import { AUTH_ERROR_MESSAGE } from '../constants/errors';
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../constants/validators';
 
 export default {
   email: {
@@ -24,22 +19,6 @@ export default {
     matches: {
       options: /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^(){}[\]<>])/,
       errorMessage: AUTH_ERROR_MESSAGE.INVALID_PASS,
-    },
-  },
-  name: {
-    trim: true,
-    escape: true,
-    notEmpty: { errorMessage: AUTH_ERROR_MESSAGE.EMPTY_NAME, bail: true },
-    isLength: {
-      min: NAME_MIN_LENGTH,
-      max: NAME_MAX_LENGTH,
-      errorMessage: AUTH_ERROR_MESSAGE.INVALID_NAME_LENGTH,
-      bail: true,
-    },
-    matches: {
-      options: /^[a-zA-Zа-яА-ЯёЁїЇіІєЄґҐ\s]+$/,
-      errorMessage: AUTH_ERROR_MESSAGE.INVALID_NAME,
-      bail: true,
     },
   },
   deviceId: {

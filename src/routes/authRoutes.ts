@@ -1,7 +1,13 @@
 import { Router } from 'express';
 import { checkSchema } from 'express-validator';
 
-import * as authController from '../controllers/authController';
+import { Routes } from '../constants/routes';
+import {
+  loginRequestHandler,
+  logoutRequestHandler,
+  refreshRequestHandler,
+  registerRequestHandler,
+} from '../controllers/authController';
 import authMiddleware from '../middleware/authHandler';
 import extractIp from '../middleware/extractIp';
 import loginValidatorSchema from '../validators/loginSchema';
@@ -11,23 +17,21 @@ import validationResultHandler from '../validators/validationResultHandler';
 const router = Router();
 
 router.post(
-  '/register',
-  checkSchema(registerValidatorSchema, ['body']),
+  Routes.AUTH.REGISTER,
+  checkSchema(registerValidatorSchema),
   validationResultHandler,
   extractIp,
-  authController.register
+  registerRequestHandler
 );
 router.post(
-  '/login',
+  Routes.AUTH.LOGIN,
   checkSchema(loginValidatorSchema),
   validationResultHandler,
   extractIp,
-  authController.login
+  loginRequestHandler
 );
-router.post('/logout', authMiddleware, authController.logout);
-router.post('/refresh', authMiddleware, authController.refresh);
-router.get('/activate/:token', authMiddleware, authController.activate);
-router.get('/users', authMiddleware, authController.getUsers);
+router.post(Routes.AUTH.LOGOUT, authMiddleware, logoutRequestHandler);
+router.post(Routes.AUTH.REFRESH, authMiddleware, refreshRequestHandler);
 
 // Google OAuth routes
 // router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));

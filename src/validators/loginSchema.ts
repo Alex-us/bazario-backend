@@ -1,4 +1,4 @@
-import { AUTH_ERROR_MESSAGE } from '../errors/constants';
+import { AUTH_ERROR_MESSAGE } from '../constants/errors';
 
 export default {
   email: {

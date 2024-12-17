@@ -14,8 +14,9 @@
     "allowJs": true,
     "resolveJsonModule": true,
     "sourceMap": true,
-    "types": ["jest"]
+    "types": ["jest"],
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*.ts", "jest.config.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }

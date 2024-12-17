@@ -1,4 +1,4 @@
-import { AUTH_ERROR_MESSAGE } from './constants';
+import { AUTH_ERROR_MESSAGE } from '../constants/errors';
 
 export class ApiError extends Error {
   statusCode: number;

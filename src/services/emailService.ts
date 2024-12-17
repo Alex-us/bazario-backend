@@ -1,10 +1,13 @@
 import nodemailer, { Transporter } from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
+import { LoggerTags } from '../constants/logger';
+import { Routes } from '../constants/routes';
 import { createTaggedLogger } from '../logger';
-import { LoggerTags } from '../logger/constants';
-
-const activationBaseUrl = `${process.env.API_URL}/activate:`;
+import { UserBlockReasons } from '../types/models/user';
+import { MailProps } from '../types/services/email';
+import { getIpLocation } from '../utils/geoLocation';
+import { getUserAgentInfo } from '../utils/uaInfo';
 
 const MODULE_NAME = 'email_service';
 const logger = createTaggedLogger([LoggerTags.EMAIL, MODULE_NAME]);
@@ -29,8 +32,9 @@ export const getEmailClient = () => {
   }
 };
 
-export const sendActivationMail = async (to: string, path: string) => {
-  await emailClient?.sendMail({
+export const sendActivationMail = async (to: string, token: string) => {
+  const activationUrl = `${process.env.API_URL}${Routes.ACTIVATE.replace(':token', token)}`;
+  await getEmailClient()?.sendMail({
     from: process.env.SMTP_USER,
     to,
     subject: 'Actions required to finish registration',
@@ -38,8 +42,50 @@ export const sendActivationMail = async (to: string, path: string) => {
     html: `
           <div>
           <h1>To activate you account please follow yrl below</h1>
-          <a href="${activationBaseUrl}${path}" > ${activationBaseUrl}${path} </a>
+          <a href="${activationUrl}" > ${activationUrl} </a>
           </div>
       `,
   });
+};
+
+export const sendLoginFromNewDeviceMail = async (
+  to: string,
+  token: string,
+  ip: string = 'unknown',
+  userAgent: string = ''
+) => {
+  const location = getIpLocation(ip);
+  const { os, browser } = getUserAgentInfo(userAgent);
+  const activationUrl = `${process.env.API_URL}${Routes.ACTIVATE.replace(':token', token)}`;
+
+  await getEmailClient()?.sendMail({
+    from: process.env.SMTP_USER,
+    to,
+    subject: 'Login from new device',
+    text: '',
+    html: `
+          <div>
+          <h1>Someone just logged in to your account from a new device</h1>
+          <ul>
+            <li><strong>OS:</strong> ${os}</li>
+            <li><strong>Browser:</strong> ${browser}</li>
+            <li><strong>IP Address:</strong> ${ip}</li>
+            <li><strong>Location:</strong> ${location}</li>
+            <li><strong>Time:</strong> ${new Date().toLocaleString()}</li>
+          </ul>
+          <a href="${activationUrl}" > ${activationUrl} </a>
+          </div>
+      `,
+  });
+};
+
+export const sendEmail = async (props: MailProps) => {
+  switch (props.type) {
+    case UserBlockReasons.NEW_DEVICE_LOGIN:
+      return sendLoginFromNewDeviceMail(props.to, props.token, props.ip, props.userAgent);
+    case UserBlockReasons.UNCONFIRMED_EMAIL:
+      return sendActivationMail(props.to, props.token);
+    default:
+      return;
+  }
 };

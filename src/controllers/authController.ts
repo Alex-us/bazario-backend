@@ -1,23 +1,22 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { AUTH_ERROR_MESSAGE, AUTH_SUCCESS_MESSAGE } from '../errors/constants';
+import { AUTH_ERROR_MESSAGE, AUTH_SUCCESS_MESSAGE } from '../constants/errors';
+import { LoggerTags } from '../constants/logger';
 import { BadRequestError, UnauthorizedError } from '../errors/Error';
 import { createTaggedLogger } from '../logger';
-import { LoggerTags } from '../logger/constants';
-import {
-  clearRefreshTokenCookie,
-  setRefreshTokenCookie,
-  validateRefreshToken,
-} from '../services/tokenService';
 import {
   activateUser,
   loginUser,
   logoutUser,
   refreshUserToken,
   registerUser,
-} from '../services/userService';
+} from '../services/authService';
 import {
-  ActivateUserRequest,
+  clearRefreshTokenCookie,
+  setRefreshTokenCookie,
+  validateRefreshToken,
+} from '../services/tokenService';
+import {
   GeneralSuccessResponse,
   LoginRequest,
   LoginResponse,
@@ -26,53 +25,60 @@ import {
   RefreshTokenResponse,
   RegisterRequest,
   RegisterResponse,
-} from '../types/auth';
+} from '../types/controllers/auth';
 import { LoggedInUserData } from '../types/express';
 
 const MODULE_NAME = 'auth_controller';
 const logger = createTaggedLogger([LoggerTags.AUTH, MODULE_NAME]);
 
-export const register = async (
-  req: Request<RegisterRequest>,
+/**
+ * Register user request handler
+ * @param req - HTTP request with registration data.
+ * @param res - HTTP response with token and user data.
+ * @param next
+ * @returns {Promise<void>}
+ */
+export const registerRequestHandler = async (
+  req: Request<unknown, RegisterResponse, RegisterRequest>,
   res: Response<RegisterResponse>,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const { name, email, password, deviceId, ip } = req.body;
-    logger.info('Trying to register user', { ...req.body });
-    const { accessToken, refreshToken } = await registerUser({
-      name,
-      email,
-      password,
-      deviceId,
-      ip,
-    });
+    logger.info('Trying to register user', { ...req.body, password: '***' });
+    const userData = await registerUser({ ...req.body });
 
-    setRefreshTokenCookie(res, refreshToken);
-    res.json({ token: accessToken });
-    logger.info('User registered successfully', { email });
+    setRefreshTokenCookie(res, userData.refreshToken);
+    res.json({ token: userData.accessToken, user: userData.user });
+    logger.info('User registered successfully', { email: userData.user.email });
   } catch (err) {
     next(err);
   }
 };
 
-export const activate = async (
-  req: Request<ActivateUserRequest>,
+/**
+ * Activate user request handler
+ * @param req - HTTP request with activation token.
+ * @param res - HTTP response with success message.
+ * @param next
+ * @returns {Promise<void>}
+ */
+export const activateRequestHandler = async (
+  req: Request<{ token: string }, GeneralSuccessResponse, unknown>,
   res: Response<GeneralSuccessResponse>,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     logger.info('Trying to activate user');
     const { token: activationToken } = req.params;
     const userData = req.user as LoggedInUserData;
     if (!activationToken) {
       logger.error('Empty activation token');
-      next(new BadRequestError(AUTH_ERROR_MESSAGE.EMPTY_ACTIVATION_TOKEN));
+      return next(new BadRequestError(AUTH_ERROR_MESSAGE.EMPTY_ACTIVATION_TOKEN));
     }
 
     if (!userData) {
       logger.error('No authenticated user data found');
-      next(new UnauthorizedError());
+      return next(new UnauthorizedError());
     }
 
     await activateUser(userData.id, activationToken);
@@ -82,44 +88,55 @@ export const activate = async (
   }
 };
 
-export const login = async (
-  req: Request<LoginRequest>,
+/**
+ * Login user request handler
+ * @param req - HTTP request with login data.
+ * @param res - HTTP response with token and user data.
+ * @param next
+ * @returns {Promise<void>}
+ */
+export const loginRequestHandler = async (
+  req: Request<unknown, LoginResponse, LoginRequest>,
   res: Response<LoginResponse>,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const { email, password, deviceId } = req.body;
-    const { refreshToken, accessToken } = await loginUser({
-      email,
-      password,
-      deviceId,
+    const userAgent = req.headers['user-agent'] || 'Unknown';
+    const { refreshToken, accessToken, user } = await loginUser({
+      ...req.body,
+      userAgent,
     });
     setRefreshTokenCookie(res, refreshToken);
-    res.json({ token: accessToken });
+    res.json({ token: accessToken, user });
   } catch (err) {
     next(err);
   }
 };
 
-export const refresh = async (
-  req: Request<RefreshTokenRequest>,
+/**
+ * Refresh token request handler
+ * @param req - HTTP request with refresh token.
+ * @param res - HTTP response with new access token.
+ * @param next
+ * @returns {Promise<void>}
+ */
+export const refreshRequestHandler = async (
+  req: Request<unknown, RefreshTokenResponse, RefreshTokenRequest>,
   res: Response<RefreshTokenResponse>,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { refreshToken } = req.cookies;
     const { id, deviceId } = req.user as LoggedInUserData;
 
     if (!refreshToken) {
-      next(new UnauthorizedError());
-      return;
+      return next(new UnauthorizedError());
     }
 
     const isTokenValid = validateRefreshToken(id, deviceId, refreshToken);
 
     if (!isTokenValid) {
-      next(new UnauthorizedError());
-      return;
+      return next(new UnauthorizedError());
     }
 
     const { refreshToken: newRefreshToken, accessToken } = await refreshUserToken(
@@ -133,11 +150,18 @@ export const refresh = async (
   }
 };
 
-export const logout = async (
-  req: Request<LogoutRequest>,
+/**
+ * Logout user request handler
+ * @param req - HTTP request with refresh token.
+ * @param res - HTTP response with success message.
+ * @param next
+ * @returns {Promise<void>}
+ */
+export const logoutRequestHandler = async (
+  req: Request<unknown, GeneralSuccessResponse, LogoutRequest>,
   res: Response<GeneralSuccessResponse>,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { id, deviceId } = req.user as LoggedInUserData;
 
@@ -148,21 +172,3 @@ export const logout = async (
     next(err);
   }
 };
-
-// export const googleCallback = (req: Request, res: Response) => {
-//   const token = jwt.sign(
-//     { id: (req.user as IUser)?._id },
-//     process.env.JWT_SECRET as string,
-//     { expiresIn: '1h' }
-//   );
-//   res.redirect(`/?token=${token}`);
-// };
-//
-// export const facebookCallback = (req: Request, res: Response) => {
-//   const token = jwt.sign(
-//     { id: (req.user as IUser)?._id },
-//     process.env.JWT_SECRET as string,
-//     { expiresIn: '1h' }
-//   );
-//   res.redirect(`/?token=${token}`);
-// };
