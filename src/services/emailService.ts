@@ -97,14 +97,16 @@ export const sendEmail = async (props: MailProps) => {
   try {
     switch (props.type) {
       case UserBlockReasons.NEW_DEVICE_LOGIN:
-        return sendLoginFromNewDeviceMail(
+        await sendLoginFromNewDeviceMail(
           props.to,
           props.token,
           props.ip,
           props.userAgent
         );
+        break;
       case UserBlockReasons.UNCONFIRMED_EMAIL:
-        return sendActivationMail(props.to, props.token);
+        await sendActivationMail(props.to, props.token);
+        break;
       default:
         return;
     }

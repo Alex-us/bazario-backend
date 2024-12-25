@@ -17,8 +17,8 @@ jest.mock('nodemailer', () => ({
 
 describe('emailService', () => {
   beforeEach(() => {
-    jest.resetModules();
     jest.clearAllMocks();
+    jest.restoreAllMocks();
     emailService.resetEmailClient();
   });
 
@@ -33,7 +33,22 @@ describe('emailService', () => {
     expect(nodemailer.createTransport).toHaveBeenCalledTimes(1);
   });
 
+  it('should not throw an error if email client initialization fails', () => {
+    nodemailer.createTransport = jest.fn().mockImplementation(() => {
+      throw new Error('SMTP error');
+    });
+    const client = emailService.getEmailClient();
+
+    expect(client).toBe(undefined);
+  });
+
   it('should init email client before sending activation email if not initialized', async () => {
+    nodemailer.createTransport = jest.fn().mockImplementation(() => {
+      return {
+        sendMail: jest.fn().mockResolvedValue({ messageId: '12345' }),
+      };
+    });
+
     await emailService.sendActivationMail(to, token);
     expect(nodemailer.createTransport).toHaveBeenCalledTimes(1);
   });
@@ -106,30 +121,65 @@ describe('emailService', () => {
     spy.mockRestore();
   });
 
-  it('should throw an error if new device login email sending fails', async () => {
-    const client = emailService.getEmailClient();
-    if (client) {
-      jest.mocked(client.sendMail).mockRejectedValue(new Error('SMTP error'));
+  it('should not send activation email if email client is not initialized', async () => {
+    nodemailer.createTransport = jest.fn().mockImplementation(() => {
+      throw new Error('SMTP error');
+    });
 
-      await expect(
-        emailService.sendLoginFromNewDeviceMail(to, token, ip, userAgent)
-      ).rejects.toThrow('SMTP error');
-    } else {
-      throw new Error('Email client is not initialized');
-    }
+    await expect(emailService.sendActivationMail(to, token)).rejects.toThrow(
+      'Email client is not initialized'
+    );
   });
 
-  it('should throw an error if activation email sending fails', async () => {
-    const client = emailService.getEmailClient();
-    if (client) {
-      jest.mocked(client.sendMail).mockRejectedValue(new Error('SMTP error'));
+  it('should not send new device login email if email client is not initialized', async () => {
+    emailService.resetEmailClient();
+    jest.mocked(nodemailer.createTransport).mockImplementation(() => {
+      throw new Error('SMTP error');
+    });
 
-      await expect(emailService.sendActivationMail(to, token)).rejects.toThrow(
-        'SMTP error'
-      );
-    } else {
-      throw new Error('Email client is not initialized');
-    }
+    await expect(
+      emailService.sendLoginFromNewDeviceMail(to, token, ip, userAgent)
+    ).rejects.toThrow('Email client is not initialized');
+  });
+
+  it('sendEmail should not throw an error if email type is not supported', async () => {
+    await expect(
+      emailService.sendEmail({ to, token, type: 'unknown' as UserBlockReasons })
+    ).resolves.toBeUndefined();
+  });
+
+  it('sendEmail should not throw an error if error happened during new device login email', async () => {
+    const spy = jest
+      .spyOn(emailService, 'sendLoginFromNewDeviceMail')
+      .mockImplementation(() => Promise.reject(new Error('SMTP error')));
+
+    await expect(
+      emailService.sendEmail({
+        to,
+        token,
+        ip,
+        userAgent,
+        type: UserBlockReasons.NEW_DEVICE_LOGIN,
+      })
+    ).resolves.toBeUndefined();
+    spy.mockRestore();
+  });
+
+  it('sendEmail should not throw an error if error happened during confirm email', async () => {
+    const spy = jest
+      .spyOn(emailService, 'sendActivationMail')
+      .mockRejectedValue('SMTP error');
+
+    await expect(
+      emailService.sendEmail({
+        to,
+        token,
+        ip,
+        userAgent,
+        type: UserBlockReasons.UNCONFIRMED_EMAIL,
+      })
+    ).resolves.toBeUndefined();
+    spy.mockRestore();
   });
 
   it('should reset email client', () => {

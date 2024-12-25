@@ -153,4 +153,17 @@ describe('Token Service', () => {
     await deleteRefreshTokenFromDb(userId, deviceId);
     expect(redisClient.del).toHaveBeenCalledWith(expect.any(String));
   });
+
+  it('fails to validate access token if it is not provided', () => {
+    const result = validateAccessTokenAndReturnUserData('');
+    expect(result).toBe(false);
+  });
+
+  it('fails to validate access token if it is not valid', () => {
+    (jwt.verify as jest.Mock).mockImplementation(() => {
+      throw new Error('Invalid token');
+    });
+    const result = validateAccessTokenAndReturnUserData('invalid.token');
+    expect(result).toBe(false);
+  });
 });
