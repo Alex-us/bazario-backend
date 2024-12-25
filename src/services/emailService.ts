@@ -12,12 +12,15 @@ import { getUserAgentInfo } from '../utils/uaInfo';
 const MODULE_NAME = 'email_service';
 const logger = createTaggedLogger([LoggerTags.EMAIL, MODULE_NAME]);
 
-let emailClient: Transporter<SMTPTransport.SentMessageInfo, SMTPTransport.Options>;
+let emailClient: Transporter<
+  SMTPTransport.SentMessageInfo,
+  SMTPTransport.Options
+> | null = null;
 
 export const getEmailClient = () => {
   try {
     if (!emailClient) {
-      logger.info('Initializing email transporter');
+      logger.info('Initializing email client');
       emailClient = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -32,9 +35,17 @@ export const getEmailClient = () => {
   }
 };
 
+export const resetEmailClient = () => {
+  emailClient = null;
+};
+
 export const sendActivationMail = async (to: string, token: string) => {
   const activationUrl = `${process.env.API_URL}${Routes.ACTIVATE.replace(':token', token)}`;
-  await getEmailClient()?.sendMail({
+  const client = emailClient ?? getEmailClient();
+  if (!client) {
+    throw new Error('Email client is not initialized');
+  }
+  await client.sendMail({
     from: process.env.SMTP_USER,
     to,
     subject: 'Actions required to finish registration',
@@ -57,8 +68,11 @@ export const sendLoginFromNewDeviceMail = async (
   const location = getIpLocation(ip);
   const { os, browser } = getUserAgentInfo(userAgent);
   const activationUrl = `${process.env.API_URL}${Routes.ACTIVATE.replace(':token', token)}`;
-
-  await getEmailClient()?.sendMail({
+  const client = emailClient ?? getEmailClient();
+  if (!client) {
+    throw new Error('Email client is not initialized');
+  }
+  await client.sendMail({
     from: process.env.SMTP_USER,
     to,
     subject: 'Login from new device',
@@ -80,12 +94,21 @@ export const sendLoginFromNewDeviceMail = async (
 };
 
 export const sendEmail = async (props: MailProps) => {
-  switch (props.type) {
-    case UserBlockReasons.NEW_DEVICE_LOGIN:
-      return sendLoginFromNewDeviceMail(props.to, props.token, props.ip, props.userAgent);
-    case UserBlockReasons.UNCONFIRMED_EMAIL:
-      return sendActivationMail(props.to, props.token);
-    default:
-      return;
+  try {
+    switch (props.type) {
+      case UserBlockReasons.NEW_DEVICE_LOGIN:
+        return sendLoginFromNewDeviceMail(
+          props.to,
+          props.token,
+          props.ip,
+          props.userAgent
+        );
+      case UserBlockReasons.UNCONFIRMED_EMAIL:
+        return sendActivationMail(props.to, props.token);
+      default:
+        return;
+    }
+  } catch (err) {
+    logger.error('Error sending email', { error: err });
   }
 };

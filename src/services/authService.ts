@@ -20,9 +20,24 @@ const MODULE_NAME = 'auth_service';
 
 const logger = createTaggedLogger([LoggerTags.AUTH, MODULE_NAME]);
 
+export const sendUserActivation = async (user: IUser) => {
+  logger.info('Trying to send user activation.', { id: user?._id });
+
+  if (user.active) {
+    logger.warn('User already activated', { id: user._id });
+    throw new Error(`User ${user.email} is already active`);
+  }
+
+  const activationToken = randomUUID();
+  user.activationToken = activationToken;
+  await user.save();
+  await sendActivationMail(user.email, activationToken);
+  logger.info('Activation sent.', { id: user._id });
+};
+
 export const registerUser = async (props: credentialsData) => {
   const { email, password, deviceId, ip } = props;
-  logger.info('Trying to register user', { email, ip });
+  logger.info('Trying to register user', { email, ip, deviceId });
   let user = await UserModel.findOne({ email });
 
   if (user) {
@@ -37,15 +52,19 @@ export const registerUser = async (props: credentialsData) => {
     active: false,
     blockReason: UserBlockReasons.UNCONFIRMED_EMAIL,
   });
-
-  logger.info('Created user in Db', { email, id: user._id });
   const userId = user._id.toString();
+  logger.info('Created user in Db', { email, id: userId });
 
-  // TODO: check email config and fix mailer transport error
-  await sendUserActivation(user);
   const refreshToken = await generateRefreshToken(userId, deviceId);
   const accessToken = generateAccessToken(userId, deviceId);
-  logger.info('User registered successfully', { email, id: user._id });
+  logger.info('User registered successfully', { email, id: userId });
+
+  try {
+    await sendUserActivation(user);
+  } catch (error) {
+    logger.error('Error sending activation email', { email, error });
+  }
+
   return {
     refreshToken,
     accessToken,
@@ -146,21 +165,6 @@ export const refreshUserToken = async (userId: string, deviceId: string) => {
     refreshToken,
     accessToken,
   };
-};
-
-export const sendUserActivation = async (user: IUser) => {
-  logger.info('Trying to send user activation.', { id: user?._id });
-
-  if (user.active) {
-    logger.warn('User already activated', { id: user._id });
-    throw new Error(`User ${user.email} is already active`);
-  }
-
-  const activationToken = randomUUID();
-  user.activationToken = activationToken;
-  await user.save();
-  await sendActivationMail(user.email, activationToken);
-  logger.info('Activation sent.', { id: user._id });
 };
 
 export const findUserById = async (userId: string) => {

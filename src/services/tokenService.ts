@@ -118,7 +118,7 @@ export const getRefreshTokenFromDb = async (userId: string, deviceId: string) =>
   try {
     logger.info('Getting refresh token from Db', { id: userId, deviceId });
     const key = getRefreshTokenRedisKey(userId, deviceId);
-    const token = getRedisClient()?.get(key);
+    const token = await getRedisClient()?.get(key);
     logger.info('Got refresh token from Db successfully', { id: userId, deviceId });
     return token;
   } catch (err) {
