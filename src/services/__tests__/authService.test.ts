@@ -6,6 +6,7 @@ import getUserDTO from '../../models/User/dto';
 import { IUser, UserBlockReasons } from '../../types/models/user';
 import * as authService from '../authService';
 import { sendUserActivation } from '../authService';
+import { sendActivationMail } from '../emailService';
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -145,6 +146,12 @@ describe('authService', () => {
 
       await expect(authService.loginUser(userAProps)).rejects.toThrow(BadRequestError);
     });
+
+    it('throws an error if user not found', async () => {
+      (UserModel.findOne as jest.Mock).mockResolvedValue(null);
+
+      await expect(authService.loginUser(userAProps)).rejects.toThrow(BadRequestError);
+    });
   });
 
   describe('logoutUser', () => {
@@ -179,6 +186,14 @@ describe('authService', () => {
         accessToken: 'accessToken',
       });
     });
+
+    it('throws an error if user not found', async () => {
+      (UserModel.findById as jest.Mock).mockResolvedValue(null);
+
+      await expect(authService.refreshUserToken('userId', 'deviceId')).rejects.toThrow(
+        Error
+      );
+    });
   });
 
   describe('findUserById', () => {
@@ -188,6 +203,32 @@ describe('authService', () => {
 
       const result = await authService.findUserById('userId');
 
+      expect(result).toEqual(mockUser);
+    });
+  });
+
+  describe('sendUserActivation', () => {
+    it('sends activation email to inactive user', async () => {
+      const user = { ...mockUserA, active: false, save: jest.fn() };
+      (sendActivationMail as jest.Mock).mockResolvedValue('');
+      await authService.sendUserActivation(user as unknown as IUser);
+      expect(user.save).toHaveBeenCalled();
+      expect(sendActivationMail).toHaveBeenCalledWith(user.email, user.activationToken);
+    });
+
+    it('throws error if user is already active', async () => {
+      const user = { ...mockUserA, active: true };
+      await expect(
+        authService.sendUserActivation(user as unknown as IUser)
+      ).rejects.toThrow(Error);
+    });
+  });
+
+  describe('findUserById', () => {
+    it('finds user by id successfully', async () => {
+      const mockUser = { _id: 'userId' };
+      (UserModel.findById as jest.Mock).mockResolvedValue(mockUser);
+      const result = await authService.findUserById('userId');
       expect(result).toEqual(mockUser);
     });
   });
