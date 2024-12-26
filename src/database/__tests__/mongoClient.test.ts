@@ -37,7 +37,7 @@ describe('mongoClient', () => {
     const mockError = new Error('Connection failed');
     (mongoose.connect as jest.Mock).mockRejectedValueOnce(mockError);
 
-    await mongoClient.connectMongo();
+    await expect(mongoClient.connectMongo()).rejects.toThrow(mockError);
 
     expect(mongoose.connect).toHaveBeenCalledWith(mockMongoURI);
     expect(logger.error).toHaveBeenCalledWith('Error connecting to MongoDB', {

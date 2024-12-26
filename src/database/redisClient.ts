@@ -7,7 +7,7 @@ import { createTaggedLogger } from '../logger';
 const MODULE_NAME = 'redis';
 const logger = createTaggedLogger([LoggerTags.DB, MODULE_NAME]);
 
-let redisClient: RedisClientType | null = null;
+let redisClient: RedisClientType;
 
 const initRedisClient = () => {
   if (!redisClient) {
@@ -68,7 +68,6 @@ const disconnectRedis = async () => {
     await redisClient.disconnect();
   }
   redisClient.removeAllListeners();
-  redisClient = null;
   logger.info('Redis client disconnected');
 };
 

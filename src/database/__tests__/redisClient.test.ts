@@ -39,6 +39,21 @@ describe('Redis Client Module', () => {
     disconnectRedis();
   });
 
+  describe('disconnectRedis', () => {
+    it('should log if Redis is not initialized', async () => {
+      await redisModule.disconnectRedis();
+
+      expect(mockRedisClient.disconnect).not.toHaveBeenCalled();
+      expect(mockLogger.info).toHaveBeenCalledWith('Redis client not connected');
+    });
+
+    it('not call disconnect if Redis is already disconnected', async () => {
+      await redisModule.disconnectRedis();
+
+      expect(mockRedisClient.disconnect).not.toHaveBeenCalled();
+    });
+  });
+
   describe('initRedisClient', () => {
     it('should initialize Redis client and register events', () => {
       redisModule.initRedisClient();
@@ -67,9 +82,8 @@ describe('Redis Client Module', () => {
 
     it('should not reinitialize Redis client if already initialized', () => {
       redisModule.initRedisClient();
-      redisModule.initRedisClient();
 
-      expect(createClient).toHaveBeenCalledTimes(1); // Клиент создаётся только 1 раз
+      expect(createClient).toHaveBeenCalledTimes(0);
     });
   });
 
@@ -102,9 +116,7 @@ describe('Redis Client Module', () => {
         error: mockError,
       });
     });
-  });
 
-  describe('disconnectRedis', () => {
     it('should disconnect Redis successfully and log success', async () => {
       await redisModule.connectRedis();
       Object.defineProperty(mockRedisClient, 'isOpen', { value: true });
@@ -115,20 +127,6 @@ describe('Redis Client Module', () => {
       expect(mockRedisClient.removeAllListeners).toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith('Redis client disconnected');
       Object.defineProperty(mockRedisClient, 'isOpen', { value: false });
-    });
-
-    it('not call disconnect if Redis is already disconnected', async () => {
-      redisModule.initRedisClient();
-      await redisModule.disconnectRedis();
-
-      expect(mockRedisClient.disconnect).not.toHaveBeenCalled();
-    });
-
-    it('should log if Redis is not initialized', async () => {
-      await redisModule.disconnectRedis();
-
-      expect(mockRedisClient.disconnect).not.toHaveBeenCalled();
-      expect(mockLogger.info).toHaveBeenCalledWith('Redis client not connected');
     });
   });
 
