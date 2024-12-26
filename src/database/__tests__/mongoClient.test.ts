@@ -17,6 +17,7 @@ jest.mock('../../logger', () => ({
 const mockMongoURI = 'mongodb://localhost:27017/testdb';
 
 describe('mongoClient', () => {
+  const logger = createTaggedLogger(['some', 'mongo']);
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.MONGO_URI = mockMongoURI;
@@ -24,7 +25,6 @@ describe('mongoClient', () => {
 
   it('should connect to MongoDB successfully', async () => {
     (mongoose.connect as jest.Mock).mockResolvedValueOnce(undefined);
-    const logger = createTaggedLogger(['some', 'mongo']);
 
     await mongoClient.connectMongo();
 
@@ -36,7 +36,6 @@ describe('mongoClient', () => {
   it('should log an error if connection to MongoDB fails', async () => {
     const mockError = new Error('Connection failed');
     (mongoose.connect as jest.Mock).mockRejectedValueOnce(mockError);
-    const logger = createTaggedLogger(['some', 'mongo']);
 
     await mongoClient.connectMongo();
 

@@ -3,4 +3,5 @@ export enum LoggerTags {
   EMAIL = 'email',
   DB = 'db',
   EXPRESS = 'express',
+  SERVER = 'server',
 }
