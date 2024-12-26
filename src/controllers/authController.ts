@@ -63,7 +63,7 @@ export const registerRequestHandler = async (
  * @returns {Promise<void>}
  */
 export const activateRequestHandler = async (
-  req: Request<{ token: string }, GeneralSuccessResponse, unknown>,
+  req: Request<{ token?: string }, GeneralSuccessResponse, unknown>,
   res: Response<GeneralSuccessResponse>,
   next: NextFunction
 ): Promise<void> => {

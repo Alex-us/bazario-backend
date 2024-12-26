@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 
+import { mockUserA, userAProps } from '../../__mocks__/user';
 import { BadRequestError, UnauthorizedError } from '../../errors/Error';
 import UserModel from '../../models/User';
 import getUserDTO from '../../models/User/dto';
@@ -12,7 +13,6 @@ import {
   generateRefreshToken,
   deleteRefreshTokenFromDb,
 } from '../tokenService';
-import { mockUserA, userAProps } from './mocks';
 
 jest.mock('../../models/User');
 jest.mock('bcryptjs');
