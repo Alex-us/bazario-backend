@@ -1,6 +1,8 @@
 import { Response } from 'express';
 import jwt from 'jsonwebtoken';
 
+import { REFRESH_TOKEN_KEY_PREFIX } from '../../constants/database';
+import { REFRESH_TOKEN_EXP } from '../../constants/services/token';
 import { getRedisClient } from '../../database/redisClient';
 import { findUserById } from '../authService';
 import {
@@ -46,9 +48,13 @@ describe('Token Service', () => {
     (getRedisClient as jest.Mock).mockReturnValue(redisClient);
     const token = await generateRefreshToken(userId, deviceId);
     expect(token).toBe(refreshToken);
-    expect(redisClient.set).toHaveBeenCalledWith(expect.any(String), refreshToken, {
-      EX: expect.any(Number),
-    });
+    expect(redisClient.set).toHaveBeenCalledWith(
+      `${REFRESH_TOKEN_KEY_PREFIX}${userId}:${deviceId}`,
+      refreshToken,
+      {
+        EX: REFRESH_TOKEN_EXP / 1000,
+      }
+    );
   });
 
   it('decodes an access token', () => {
@@ -130,14 +136,18 @@ describe('Token Service', () => {
     (getRedisClient as jest.Mock).mockReturnValue(redisClient);
     const token = await getRefreshTokenFromDb(userId, deviceId);
     expect(token).toBe(refreshToken);
-    expect(redisClient.get).toHaveBeenCalledWith(expect.any(String));
+    expect(redisClient.get).toHaveBeenCalledWith(
+      `${REFRESH_TOKEN_KEY_PREFIX}${userId}:${deviceId}`
+    );
   });
 
   it('deletes a refresh token from the database', async () => {
     const redisClient = { del: jest.fn().mockResolvedValue(1) };
     (getRedisClient as jest.Mock).mockReturnValue(redisClient);
     await deleteRefreshTokenFromDb(userId, deviceId);
-    expect(redisClient.del).toHaveBeenCalledWith(expect.any(String));
+    expect(redisClient.del).toHaveBeenCalledWith(
+      `${REFRESH_TOKEN_KEY_PREFIX}${userId}:${deviceId}`
+    );
   });
 
   it('handles error when getting refresh token from the database', async () => {
@@ -151,7 +161,9 @@ describe('Token Service', () => {
     const redisClient = { del: jest.fn().mockRejectedValue(new Error('Redis error')) };
     (getRedisClient as jest.Mock).mockReturnValue(redisClient);
     await deleteRefreshTokenFromDb(userId, deviceId);
-    expect(redisClient.del).toHaveBeenCalledWith(expect.any(String));
+    expect(redisClient.del).toHaveBeenCalledWith(
+      `${REFRESH_TOKEN_KEY_PREFIX}${userId}:${deviceId}`
+    );
   });
 
   it('fails to validate access token if it is not provided', () => {

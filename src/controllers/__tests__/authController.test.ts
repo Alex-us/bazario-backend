@@ -204,6 +204,7 @@ describe('authController', () => {
       jest.spyOn(tokenService, 'validateRefreshToken').mockResolvedValue(false);
 
       mockReq.user = { id: mockUserA._id, deviceId: mockUserA.deviceId };
+      mockReq.cookies = { refreshToken: 'oldRefreshToken' };
 
       await authController.refreshRequestHandler(
         mockReq as Request,
@@ -212,6 +213,35 @@ describe('authController', () => {
       );
 
       expect(mockNext).toHaveBeenCalledWith(new UnauthorizedError());
+    });
+
+    it('should handle case with no refresh token', async () => {
+      mockReq.user = { id: mockUserA._id, deviceId: mockUserA.deviceId };
+
+      await authController.refreshRequestHandler(
+        mockReq as Request,
+        mockRes as Response,
+        mockNext
+      );
+
+      expect(mockNext).toHaveBeenCalledWith(new UnauthorizedError());
+    });
+
+    it('should handle refresh errors', async () => {
+      const error = new Error('Refresh failed');
+      jest.spyOn(tokenService, 'validateRefreshToken').mockResolvedValue(true);
+      jest.spyOn(authService, 'refreshUserToken').mockRejectedValue(error);
+
+      mockReq.cookies = { refreshToken: 'oldRefreshToken' };
+      mockReq.user = { id: mockUserA._id, deviceId: mockUserA.deviceId };
+
+      await authController.refreshRequestHandler(
+        mockReq as Request,
+        mockRes as Response,
+        mockNext
+      );
+
+      expect(mockNext).toHaveBeenCalledWith(error);
     });
   });
 

@@ -133,7 +133,7 @@ export const refreshRequestHandler = async (
       return next(new UnauthorizedError());
     }
 
-    const isTokenValid = validateRefreshToken(id, deviceId, refreshToken);
+    const isTokenValid = await validateRefreshToken(id, deviceId, refreshToken);
 
     if (!isTokenValid) {
       return next(new UnauthorizedError());
