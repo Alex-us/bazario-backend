@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import { REFRESH_TOKEN_KEY_PREFIX } from '../../constants/database';
 import { REFRESH_TOKEN_EXP } from '../../constants/services/token';
-import { getRedisClient } from '../../database/redisClient';
+import { redisClient } from '../../database/redisClient';
 import { findUserById } from '../authService';
 import {
   generateAccessToken,
@@ -19,8 +19,16 @@ import {
 } from '../tokenService';
 
 jest.mock('jsonwebtoken');
-jest.mock('../../database/redisClient');
 jest.mock('../authService');
+
+jest.mock('../../database/redisClient', () => ({
+  connectRedis: jest.fn(),
+  redisClient: {
+    get: jest.fn(),
+    set: jest.fn(),
+    del: jest.fn(),
+  },
+}));
 
 describe('Token Service', () => {
   const userId = 'user123';
@@ -44,8 +52,7 @@ describe('Token Service', () => {
 
   it('generates a refresh token', async () => {
     (jwt.sign as jest.Mock).mockReturnValue(refreshToken);
-    const redisClient = { set: jest.fn(), del: jest.fn() };
-    (getRedisClient as jest.Mock).mockReturnValue(redisClient);
+
     const token = await generateRefreshToken(userId, deviceId);
     expect(token).toBe(refreshToken);
     expect(redisClient.set).toHaveBeenCalledWith(
@@ -73,10 +80,10 @@ describe('Token Service', () => {
 
   it('validates a refresh token', async () => {
     (jwt.verify as jest.Mock).mockReturnValue(payload);
-    const redisClient = { get: jest.fn().mockResolvedValue(refreshToken) };
-    (getRedisClient as jest.Mock).mockReturnValue(redisClient);
+    const spy = jest.spyOn(redisClient, 'get').mockResolvedValue(refreshToken);
     const result = await validateRefreshToken(userId, deviceId, refreshToken);
     expect(result).toBe(true);
+    spy.mockRestore();
   });
 
   it('validates an access token and returns user data', () => {
@@ -132,18 +139,16 @@ describe('Token Service', () => {
   });
 
   it('gets a refresh token from the database', async () => {
-    const redisClient = { get: jest.fn().mockResolvedValue(refreshToken) };
-    (getRedisClient as jest.Mock).mockReturnValue(redisClient);
+    const spy = jest.spyOn(redisClient, 'get').mockResolvedValue(refreshToken);
     const token = await getRefreshTokenFromDb(userId, deviceId);
     expect(token).toBe(refreshToken);
     expect(redisClient.get).toHaveBeenCalledWith(
       `${REFRESH_TOKEN_KEY_PREFIX}${userId}:${deviceId}`
     );
+    spy.mockRestore();
   });
 
   it('deletes a refresh token from the database', async () => {
-    const redisClient = { del: jest.fn().mockResolvedValue(1) };
-    (getRedisClient as jest.Mock).mockReturnValue(redisClient);
     await deleteRefreshTokenFromDb(userId, deviceId);
     expect(redisClient.del).toHaveBeenCalledWith(
       `${REFRESH_TOKEN_KEY_PREFIX}${userId}:${deviceId}`
@@ -151,19 +156,23 @@ describe('Token Service', () => {
   });
 
   it('handles error when getting refresh token from the database', async () => {
-    const redisClient = { get: jest.fn().mockRejectedValue(new Error('Redis error')) };
-    (getRedisClient as jest.Mock).mockReturnValue(redisClient);
+    const spy = jest
+      .spyOn(redisClient, 'get')
+      .mockRejectedValue(new Error('Redis error'));
     const token = await getRefreshTokenFromDb(userId, deviceId);
     expect(token).toBeUndefined();
+    spy.mockRestore();
   });
 
   it('handles error when deleting refresh token from the database', async () => {
-    const redisClient = { del: jest.fn().mockRejectedValue(new Error('Redis error')) };
-    (getRedisClient as jest.Mock).mockReturnValue(redisClient);
+    const spy = jest
+      .spyOn(redisClient, 'del')
+      .mockRejectedValue(new Error('Redis error'));
     await deleteRefreshTokenFromDb(userId, deviceId);
     expect(redisClient.del).toHaveBeenCalledWith(
       `${REFRESH_TOKEN_KEY_PREFIX}${userId}:${deviceId}`
     );
+    spy.mockRestore();
   });
 
   it('fails to validate access token if it is not provided', () => {

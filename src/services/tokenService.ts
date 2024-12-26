@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { REFRESH_TOKEN_KEY_PREFIX } from '../constants/database';
 import { LoggerTags } from '../constants/logger';
 import { ACCESS_TOKEN_EXP, REFRESH_TOKEN_EXP } from '../constants/services/token';
-import { getRedisClient } from '../database/redisClient';
+import { redisClient } from '../database/redisClient';
 import { createTaggedLogger } from '../logger';
 import { CognitoIdTokenPayload } from '../types/services/token';
 import { findUserById } from './authService';
@@ -42,7 +42,7 @@ export const generateRefreshToken = async (userId: string, deviceId: string) => 
 
   logger.info('Old refresh token deleted from Redis', { id: userId, deviceId });
 
-  await getRedisClient()?.set(key, newToken, {
+  await redisClient.set(key, newToken, {
     EX: REFRESH_TOKEN_EXP / 1000,
   });
   logger.info('New Refresh token saved to Redis', { id: userId, deviceId });
@@ -118,7 +118,7 @@ export const getRefreshTokenFromDb = async (userId: string, deviceId: string) =>
   try {
     logger.info('Getting refresh token from Db', { id: userId, deviceId });
     const key = getRefreshTokenRedisKey(userId, deviceId);
-    const token = await getRedisClient()?.get(key);
+    const token = await redisClient.get(key);
     logger.info('Got refresh token from Db successfully', { id: userId, deviceId });
     return token;
   } catch (err) {
@@ -130,7 +130,7 @@ export const deleteRefreshTokenFromDb = async (userId: string, deviceId: string)
   logger.info('Deleting refresh token from Db', { id: userId, deviceId });
   try {
     const key = getRefreshTokenRedisKey(userId, deviceId);
-    await getRedisClient()?.del(key);
+    await redisClient.del(key);
     logger.info('Refresh token deleted from Db successfully', { id: userId, deviceId });
   } catch (err) {
     logger.error('Error while deleting Refresh token from Db', { error: err });
