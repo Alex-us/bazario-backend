@@ -1,10 +1,9 @@
 import * as process from 'node:process';
 import { createClient, RedisClientType } from 'redis';
 
-import { REDIS_CONNECTION_TIMEOUT } from '../../constants/database';
 import { createTaggedLogger } from '../../logger';
-import * as redisModule from '../redisClient';
-import { disconnectRedis } from '../redisClient';
+import { REDIS_CONNECTION_TIMEOUT } from '../constants';
+import * as redisModule from '../redis/client';
 
 process.env.REDIS_USER = 'default';
 process.env.REDIS_PASSWORD = 'password';
@@ -36,7 +35,7 @@ describe('Redis Client Module', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    disconnectRedis();
+    redisModule.disconnectRedis();
   });
 
   describe('disconnectRedis', () => {

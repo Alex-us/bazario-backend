@@ -1,13 +1,14 @@
 import bcrypt from 'bcryptjs';
 import { Schema, model } from 'mongoose';
 
-import { IUser } from '../../types/models/user';
+import { FACEBOOK_ID, GOOGLE_ID } from '../constants';
+import { IUser } from '../types/user';
 
 const UserSchema = new Schema<IUser>({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  googleId: { type: String },
-  facebookId: { type: String },
+  [GOOGLE_ID]: { type: String },
+  [FACEBOOK_ID]: { type: String },
   phone: { type: String },
   phoneVerified: { type: Boolean, required: true, default: false },
   phoneVerificationCode: { type: String },

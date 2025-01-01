@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 
-import { UserBlockReasons } from '../../types/models/user';
-import * as emailService from '../emailService';
+import { UserBlockReasons } from '../../models/types/user';
+import * as emailService from '../email';
 
 const to = 'test@example.com';
 const token = 'login_token';

@@ -56,6 +56,7 @@
     "@types/passport-facebook": "^3.0.3",
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/redis-mock": "^0.17.3",
+    "@types/supertest": "^6.0.2",
     "@types/ua-parser-js": "^0.7.39",
     "@types/winston-loggly-bulk": "^3.0.6",
     "eslint": "^9.16.0",
@@ -67,6 +68,7 @@
     "mockingoose": "^2.16.2",
     "nodemon": "^3.1.7",
     "redis-mock": "^0.56.3",
+    "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.7.0"

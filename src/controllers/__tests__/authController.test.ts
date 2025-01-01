@@ -1,16 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
 
 import { mockUserA, userAProps } from '../../__mocks__/user';
-import { AUTH_ERROR_MESSAGE, AUTH_SUCCESS_MESSAGE } from '../../constants/errors';
-import { BadRequestError, UnauthorizedError } from '../../errors/Error';
-import getUserDTO from '../../models/User/dto';
-import * as authService from '../../services/authService';
-import * as tokenService from '../../services/tokenService';
-import { IUser } from '../../types/models/user';
-import * as authController from '../authController';
+import { BadRequestError, UnauthorizedError } from '../../errors';
+import { AUTH_ERROR_MESSAGE, AUTH_SUCCESS_MESSAGE } from '../../errors/constants';
+import getUserDTO from '../../models/dto/user';
+import { IUser } from '../../models/types/user';
+import * as authService from '../../services/auth';
+import * as tokenService from '../../services/token';
+import * as authController from '../auth';
 
-jest.mock('../../services/authService');
-jest.mock('../../services/tokenService');
+jest.mock('../../services/auth');
+jest.mock('../../services/token');
 
 describe('authController', () => {
   let mockReq: Request;
@@ -79,7 +79,7 @@ describe('authController', () => {
   describe('activateRequestHandler', () => {
     it('should activate a user and return success message', async () => {
       mockReq.params = { token: 'activationToken' };
-      mockReq.user = { id: mockUserA._id, deviceId: mockUserA.deviceId };
+      mockReq.user = { id: mockUserA._id.toString(), deviceId: mockUserA.deviceId };
 
       await authController.activateRequestHandler(mockReq, mockRes, mockNext);
 
@@ -203,7 +203,7 @@ describe('authController', () => {
     it('should handle invalid refresh token', async () => {
       jest.spyOn(tokenService, 'validateRefreshToken').mockResolvedValue(false);
 
-      mockReq.user = { id: mockUserA._id, deviceId: mockUserA.deviceId };
+      mockReq.user = { id: mockUserA.toString(), deviceId: mockUserA.deviceId };
       mockReq.cookies = { refreshToken: 'oldRefreshToken' };
 
       await authController.refreshRequestHandler(
@@ -216,7 +216,7 @@ describe('authController', () => {
     });
 
     it('should handle case with no refresh token', async () => {
-      mockReq.user = { id: mockUserA._id, deviceId: mockUserA.deviceId };
+      mockReq.user = { id: mockUserA._id.toString(), deviceId: mockUserA.deviceId };
 
       await authController.refreshRequestHandler(
         mockReq as Request,
@@ -233,7 +233,7 @@ describe('authController', () => {
       jest.spyOn(authService, 'refreshUserToken').mockRejectedValue(error);
 
       mockReq.cookies = { refreshToken: 'oldRefreshToken' };
-      mockReq.user = { id: mockUserA._id, deviceId: mockUserA.deviceId };
+      mockReq.user = { id: mockUserA._id.toString(), deviceId: mockUserA.deviceId };
 
       await authController.refreshRequestHandler(
         mockReq as Request,
@@ -250,7 +250,7 @@ describe('authController', () => {
     it('should logout user successfully', async () => {
       jest.spyOn(authService, 'logoutUser').mockResolvedValue();
 
-      mockReq.user = { id: mockUserA._id, deviceId: mockUserA.deviceId };
+      mockReq.user = { id: mockUserA._id.toString(), deviceId: mockUserA.deviceId };
 
       await authController.logoutRequestHandler(
         mockReq as Request,
@@ -270,7 +270,7 @@ describe('authController', () => {
       const error = new Error('Logout failed');
       jest.spyOn(authService, 'logoutUser').mockRejectedValue(error);
 
-      mockReq.user = { id: mockUserA._id, deviceId: mockUserA.deviceId };
+      mockReq.user = { id: mockUserA._id.toString(), deviceId: mockUserA.deviceId };
 
       await authController.logoutRequestHandler(
         mockReq as Request,

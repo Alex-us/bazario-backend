@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { LoggerTags } from '../constants/logger';
-import { UnauthorizedError } from '../errors/Error';
+import { UnauthorizedError } from '../errors';
 import { createTaggedLogger } from '../logger';
-import { validateAccessTokenAndReturnUserData } from '../services/tokenService';
+import { LoggerTags } from '../logger/constants';
+import { validateAccessTokenAndReturnUserData } from '../services/token';
 
 const MODULE_NAME = 'auth_middleware';
 const logger = createTaggedLogger([LoggerTags.EXPRESS, MODULE_NAME]);
 
-export default (req: Request, res: Response, next: NextFunction) => {
+export default async (req: Request, res: Response, next: NextFunction) => {
   try {
     logger.info('Trying to check access token');
     const authorizationHeader = req.headers.authorization;
@@ -18,7 +18,7 @@ export default (req: Request, res: Response, next: NextFunction) => {
     }
 
     const accessToken = authorizationHeader.split(' ')[1];
-    const userData = validateAccessTokenAndReturnUserData(accessToken);
+    const userData = await validateAccessTokenAndReturnUserData(accessToken);
 
     if (!userData) {
       logger.error('Access token is not valid');

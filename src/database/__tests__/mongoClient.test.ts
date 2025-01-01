@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 import { createTaggedLogger } from '../../logger';
-import * as mongoClient from '../mongoClient';
+import * as mongoClient from '../mongo/client';
 
 jest.mock('mongoose', () => ({
   connect: jest.fn(),

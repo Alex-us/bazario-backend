@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-import { BadRequestError } from '../errors/Error';
+import { BadRequestError } from '../errors';
 
 export default (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);

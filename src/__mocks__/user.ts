@@ -1,3 +1,6 @@
+import mongoose from 'mongoose';
+
+
 export const userAProps = {
   email: 'test@example.com',
   password: 'password123',
@@ -9,7 +12,7 @@ export const userAProps = {
 export const mockUserA = {
   ...userAProps,
   password: 'hashedPassword',
-  _id: 'userId',
+  _id: new mongoose.Types.ObjectId(),
   confirmedDevices: [],
   active: false,
   blockReason: 'UNCONFIRMED_EMAIL',

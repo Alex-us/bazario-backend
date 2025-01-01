@@ -1,10 +1,10 @@
 import { Response } from 'express';
 import jwt from 'jsonwebtoken';
 
-import { REFRESH_TOKEN_KEY_PREFIX } from '../../constants/database';
-import { REFRESH_TOKEN_EXP } from '../../constants/services/token';
-import { redisClient } from '../../database/redisClient';
-import { findUserById } from '../authService';
+import { REFRESH_TOKEN_KEY_PREFIX } from '../../database/constants';
+import { redisClient } from '../../database/redis/client';
+import { findUserById } from '../auth';
+import { REFRESH_TOKEN_EXP } from '../constants';
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -16,12 +16,12 @@ import {
   clearRefreshTokenCookie,
   getRefreshTokenFromDb,
   deleteRefreshTokenFromDb,
-} from '../tokenService';
+} from '../token';
 
 jest.mock('jsonwebtoken');
-jest.mock('../authService');
+jest.mock('../auth');
 
-jest.mock('../../database/redisClient', () => ({
+jest.mock('../../database/redis/client', () => ({
   connectRedis: jest.fn(),
   redisClient: {
     get: jest.fn(),
@@ -59,7 +59,7 @@ describe('Token Service', () => {
       `${REFRESH_TOKEN_KEY_PREFIX}${userId}:${deviceId}`,
       refreshToken,
       {
-        EX: REFRESH_TOKEN_EXP / 1000,
+        EX: REFRESH_TOKEN_EXP,
       }
     );
   });
@@ -86,10 +86,10 @@ describe('Token Service', () => {
     spy.mockRestore();
   });
 
-  it('validates an access token and returns user data', () => {
+  it('validates an access token and returns user data', async () => {
     (jwt.verify as jest.Mock).mockReturnValue(payload);
     (findUserById as jest.Mock).mockReturnValue(true);
-    const result = validateAccessTokenAndReturnUserData(accessToken);
+    const result = await validateAccessTokenAndReturnUserData(accessToken);
     expect(result).toEqual(payload);
   });
 
@@ -128,14 +128,14 @@ describe('Token Service', () => {
   it('fails to validate a refresh token with invalid payload', async () => {
     (jwt.verify as jest.Mock).mockReturnValue({ id: 'wrongId', deviceId });
     const result = await validateRefreshToken(userId, deviceId, refreshToken);
-    expect(result).toBe(false);
+    expect(result).toBeFalsy();
   });
 
-  it('fails to validate an access token with invalid payload', () => {
+  it('fails to validate an access token with invalid payload', async () => {
     (jwt.verify as jest.Mock).mockReturnValue({ id: 'wrongId', deviceId });
     (findUserById as jest.Mock).mockReturnValue(undefined);
-    const result = validateAccessTokenAndReturnUserData(accessToken);
-    expect(result).toBe(false);
+    const result = await validateAccessTokenAndReturnUserData(accessToken);
+    expect(result).toBeFalsy();
   });
 
   it('gets a refresh token from the database', async () => {
@@ -175,16 +175,16 @@ describe('Token Service', () => {
     spy.mockRestore();
   });
 
-  it('fails to validate access token if it is not provided', () => {
-    const result = validateAccessTokenAndReturnUserData('');
-    expect(result).toBe(false);
+  it('fails to validate access token if it is not provided', async () => {
+    const result = await validateAccessTokenAndReturnUserData('');
+    expect(result).toBeFalsy();
   });
 
-  it('fails to validate access token if it is not valid', () => {
+  it('fails to validate access token if it is not valid', async () => {
     (jwt.verify as jest.Mock).mockImplementation(() => {
       throw new Error('Invalid token');
     });
-    const result = validateAccessTokenAndReturnUserData('invalid.token');
-    expect(result).toBe(false);
+    const result = await validateAccessTokenAndReturnUserData('invalid.token');
+    expect(result).toBeFalsy();
   });
 });

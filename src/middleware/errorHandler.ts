@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { LoggerTags } from '../constants/logger';
-import { ApiError } from '../errors/Error';
+import { ApiError } from '../errors';
 import { createTaggedLogger } from '../logger';
+import { LoggerTags } from '../logger/constants';
 
 const MODULE_NAME = 'error_middleware';
 const logger = createTaggedLogger([LoggerTags.EXPRESS, MODULE_NAME]);

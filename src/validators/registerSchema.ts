@@ -1,5 +1,5 @@
-import { AUTH_ERROR_MESSAGE } from '../constants/errors';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../constants/validators';
+import { AUTH_ERROR_MESSAGE } from '../errors/constants';
 
 export default {
   email: {
@@ -11,14 +11,14 @@ export default {
     trim: true,
     notEmpty: { errorMessage: AUTH_ERROR_MESSAGE.EMPTY_PASS, bail: true },
     isLength: {
-      min: PASSWORD_MIN_LENGTH,
-      max: PASSWORD_MAX_LENGTH,
+      options: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH },
       errorMessage: AUTH_ERROR_MESSAGE.INVALID_PASS_LENGTH,
       bail: true,
     },
     matches: {
       options: /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^(){}[\]<>])/,
       errorMessage: AUTH_ERROR_MESSAGE.INVALID_PASS,
+      bail: true,
     },
   },
   deviceId: {

@@ -1,12 +1,11 @@
 import { Router } from 'express';
 
-import { Routes } from '../constants/routes';
-import activationRoutes from './activationRoutes';
-import authRoutes from './authRoutes';
+import activationRoutes from './activation';
+import authRoutes from './auth';
+import { Routes } from './constants';
 
 const rootRouter = Router();
 
 rootRouter.use(Routes.AUTH.ROOT, authRoutes);
 
-export default rootRouter;
-export { activationRoutes };
+export { rootRouter, activationRoutes };

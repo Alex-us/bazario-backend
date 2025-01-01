@@ -4,7 +4,9 @@ import { Loggly } from 'winston-loggly-bulk';
 
 const { combine, timestamp, errors, json, printf, colorize } = format;
 
-const consoleFormat = combine(
+let logger: Logger;
+
+export const consoleFormat = combine(
   colorize(),
   timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   errors({ stack: true }),
@@ -19,33 +21,41 @@ const consoleFormat = combine(
   })
 );
 
-const logglyFormat = combine(
+export const logglyFormat = combine(
   timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   errors({ stack: true }),
   json()
 );
 
-const logger = createLogger({
-  level: 'info',
-  transports: [new transports.Console({ format: consoleFormat })],
-});
+export const initLogger = (force?: boolean) => {
+  if (force || !logger) {
+    logger = createLogger({
+      level: 'info',
+      transports: [new transports.Console({ format: consoleFormat })],
+    });
 
-if (process.env.NODE_ENV === 'production') {
-  logger.add(
-    new Loggly({
-      token: String(process.env.LOGGLY_TOKEN),
-      subdomain: String(process.env.LOGGLY_SUBDOMAIN),
-      tags: ['Backend'],
-      json: true,
-      format: logglyFormat,
-    })
-  );
+    if (process.env.NODE_ENV === 'production') {
+      logger.add(
+        new Loggly({
+          token: String(process.env.LOGGLY_TOKEN),
+          subdomain: String(process.env.LOGGLY_SUBDOMAIN),
+          tags: ['Backend'],
+          json: true,
+          format: logglyFormat,
+        })
+      );
+    }
+  }
 }
 
 export const createTaggedLogger = (tags: string[]): Logger => {
+  if (!logger) {
+    initLogger();
+  }
+
   return logger.child({
     tags,
   });
 };
 
-export default logger;
+export {logger};

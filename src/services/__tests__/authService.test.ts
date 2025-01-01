@@ -1,23 +1,22 @@
 import bcrypt from 'bcryptjs';
 
 import { mockUserA, userAProps } from '../../__mocks__/user';
-import { BadRequestError, UnauthorizedError } from '../../errors/Error';
+import { BadRequestError, UnauthorizedError } from '../../errors';
+import getUserDTO from '../../models/dto/user';
+import { IUser, UserBlockReasons } from '../../models/types/user';
 import UserModel from '../../models/User';
-import getUserDTO from '../../models/User/dto';
-import { IUser, UserBlockReasons } from '../../types/models/user';
-import * as authService from '../authService';
-import { sendUserActivation } from '../authService';
-import { sendActivationMail } from '../emailService';
+import * as authService from '../auth';
+import { sendActivationMail } from '../email';
 import {
   generateAccessToken,
   generateRefreshToken,
   deleteRefreshTokenFromDb,
-} from '../tokenService';
+} from '../token';
 
 jest.mock('../../models/User');
 jest.mock('bcryptjs');
-jest.mock('../emailService');
-jest.mock('../tokenService');
+jest.mock('../email');
+jest.mock('../token');
 
 describe('authService', () => {
   beforeEach(() => {
@@ -44,15 +43,15 @@ describe('authService', () => {
         user: getUserDTO(mockUserA as unknown as IUser),
       });
       expect(generateRefreshToken).toHaveBeenCalledWith(
-        mockUserA._id,
+        mockUserA._id.toString(),
         userAProps.deviceId
       );
       expect(generateAccessToken).toHaveBeenCalledWith(
-        mockUserA._id,
+        mockUserA._id.toString(),
         userAProps.deviceId
       );
 
-      expect(sendUserActivation).toHaveBeenCalledWith(mockUserA);
+      expect(authService.sendUserActivation).toHaveBeenCalledWith(mockUserA);
 
       expect(UserModel.create).toHaveBeenCalledWith({
         email: userAProps.email,
