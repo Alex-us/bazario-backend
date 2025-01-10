@@ -61,7 +61,7 @@ describe('User Model', () => {
     await user.save();
 
     const hashedSpy = jest.spyOn(bcrypt, 'hash');
-    const isModifiedSpy = jest.spyOn(user, 'isModified' as any).mockReturnValue(false);
+    const isModifiedSpy = jest.spyOn(user, 'isModified').mockReturnValue(false);
 
     user.email = 'newemail@example.com';
     await user.save();

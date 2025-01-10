@@ -9,8 +9,11 @@ import {
   findResetPasswordTokenOrThrow,
   generateResetPasswordToken,
 } from './resetPasswordTokenService';
-import { findUserByEmailOrThrow, updateUserByEmailOrThrow } from './userService';
-import { setUserActiveOrThrow } from './userService';
+import {
+  findUserByEmailOrThrow,
+  updateUserByEmailOrThrow,
+  setUserActiveOrThrow,
+} from './userService';
 
 const MODULE_NAME = 'account_service';
 

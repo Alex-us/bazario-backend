@@ -18,8 +18,7 @@ export const saveResetPasswordToken = async (
 
 export const getResetPasswordToken = async (email: string): Promise<string | null> => {
   const key = getResetPasswordTokenRedisKey(email);
-  const token = await redisClient.get(key);
-  return token;
+  return redisClient.get(key);
 };
 
 export const deleteResetPasswordToken = async (email: string): Promise<void> => {

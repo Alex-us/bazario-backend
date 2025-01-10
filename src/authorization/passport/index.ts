@@ -10,8 +10,8 @@ import {
   FACEBOOK_PROFILE_FIELDS,
   GOOGLE_CALLBACK_URL,
   PASSPORT_USER_QUERY_ID,
+  PassportStrategy,
 } from '../constants';
-import { PassportStrategy } from '../constants';
 
 const MODULE_NAME = 'passport';
 

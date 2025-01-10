@@ -5,8 +5,7 @@ import { createTaggedLogger } from '../../logger';
 import { LoggerTags } from '../../logger/constants';
 import { GeneralSuccessResponse } from '../../types';
 import { LoggedInUserData } from '../../types/express';
-import { AUTH_COOKIE_NAME } from '../constants';
-import { REFRESH_TOKEN_EXP } from '../constants';
+import { AUTH_COOKIE_NAME, REFRESH_TOKEN_EXP } from '../constants';
 import {
   loginUser,
   logoutUser,
