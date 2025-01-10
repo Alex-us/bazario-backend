@@ -4,4 +4,7 @@ export enum LoggerTags {
   DB = 'db',
   EXPRESS = 'express',
   SERVER = 'server',
+  ACCOUNT = 'account',
+  REDIS = 'redis',
+  USER = 'user',
 }

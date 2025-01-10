@@ -4,22 +4,22 @@ import tseslint from 'typescript-eslint';
 import eslintPluginPrettier from 'eslint-plugin-prettier';
 import perfectionist from 'eslint-plugin-perfectionist';
 import unusedImportPlugin from 'eslint-plugin-unused-imports';
+import importPlugin from 'eslint-plugin-import';
 
 export default tseslint.config(
   { ignores: ['dist'] },
   {
-    extends: [
-      js.configs.recommended,
-      ...tseslint.configs.recommended],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
     },
     plugins: {
-      'prettier': eslintPluginPrettier,
+      prettier: eslintPluginPrettier,
       'unused-imports': unusedImportPlugin,
       perfectionist,
+      import: importPlugin,
     },
     rules: {
       'perfectionist/sort-imports': [
@@ -47,18 +47,16 @@ export default tseslint.config(
           environment: 'node',
         },
       ],
-      "unused-imports/no-unused-imports": [
-        "error",
+      'unused-imports/no-unused-imports': [
+        'error',
         {
-          "varsIgnorePattern": "^_"
-        }
+          varsIgnorePattern: '^_',
+        },
       ],
-      "comma-dangle": ["error", "only-multiline"],
-      "no-trailing-spaces": [
-        "error",
-        { "ignoreComments": true}
-      ],
-      "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+      'comma-dangle': ['error', 'only-multiline'],
+      'no-trailing-spaces': ['error', { ignoreComments: true }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'import/no-duplicates': 'error',
     },
-  },
-)
+  }
+);

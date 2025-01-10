@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 
 import { ApiError } from '../errors';
+import { TokenError } from '../errors/token';
+import { UserError } from '../errors/user';
 import { createTaggedLogger } from '../logger';
 import { LoggerTags } from '../logger/constants';
 
@@ -19,12 +21,18 @@ export default (
     stack: err.stack,
     error: err,
   });
-  if (err instanceof ApiError) {
-    return res.status(err.statusCode).json({ message: err.message });
+  switch (true) {
+    case err instanceof ApiError:
+      return res.status(err.statusCode).json({ message: err.message });
+    case err instanceof TokenError:
+    case err instanceof UserError:
+      return res.status(400).json({ message: err.message });
+    default: {
+      const isProduction = process.env.NODE_ENV === 'production';
+      return res.status(500).json({
+        message: isProduction ? 'Internal Server Error' : err.message,
+        ...(isProduction ? {} : { stack: err.stack }),
+      });
+    }
   }
-  const isProduction = process.env.NODE_ENV === 'production';
-  return res.status(500).json({
-    message: isProduction ? 'Internal Server Error' : err.message,
-    ...(isProduction ? {} : { stack: err.stack }),
-  });
 };

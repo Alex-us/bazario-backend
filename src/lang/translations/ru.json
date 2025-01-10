@@ -1,0 +1,13 @@
+{
+  "email": {
+    "confirmEmail": {
+      "subject": "Подтвердите свой email для активации аккаунта"
+    },
+    "newDeviceLogin": {
+      "subject": "Новый вход в аккаунт из неизвестного устройства"
+    },
+    "resetPassword": {
+      "subject": "Запрос на сброс пароля"
+    }
+  }
+}

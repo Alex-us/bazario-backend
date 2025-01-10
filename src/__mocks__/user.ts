@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
+import { Language } from '../lang/constants';
 
 export const userAProps = {
   email: 'test@example.com',
@@ -18,4 +19,5 @@ export const mockUserA = {
   blockReason: 'UNCONFIRMED_EMAIL',
   save: jest.fn(),
   activationToken: undefined,
+  language: Language.UA,
 };

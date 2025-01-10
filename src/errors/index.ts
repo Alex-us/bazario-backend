@@ -1,4 +1,4 @@
-import { AUTH_ERROR_MESSAGE } from './constants';
+import { ERROR_MESSAGE } from './constants';
 
 export class ApiError extends Error {
   statusCode: number;
@@ -11,7 +11,7 @@ export class ApiError extends Error {
 
 export class UnauthorizedError extends ApiError {
   constructor() {
-    super(401, AUTH_ERROR_MESSAGE.USER_NOT_AUTHORIZED);
+    super(401, ERROR_MESSAGE.USER_NOT_AUTHORIZED);
   }
 }
 
