@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "npm run build && node dist/server.js",
     "dev": "tsc && nodemon --watch 'src/**/*.ts' --exec 'node dist/server.js'",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint --fix",
     "type-check": "tsc --noEmit",
     "coverage": "jest --coverage"
   },

@@ -41,7 +41,7 @@ describe('emailService', () => {
     expect(sendEmail).toHaveBeenCalledWith({
       to,
       subject: subject,
-      html: '<html>Confirm Email</html>',
+      html: subject,
     });
   });
 
@@ -106,7 +106,7 @@ describe('emailService', () => {
   });
 
   it('handles error when sending email fails', async () => {
-    (getConfirmEmailTemplate as jest.Mock).mockReturnValue('<html>Confirm Email</html>');
+    (getConfirmEmailTemplate as jest.Mock).mockReturnValue('Confirm Email');
     (i18n.changeLanguage as jest.Mock).mockResolvedValue(undefined);
     (sendEmail as jest.Mock).mockRejectedValue(new Error('Email send failed'));
 
@@ -174,9 +174,15 @@ describe('emailService', () => {
     });
 
     it('does nothing when email is empty', async () => {
-      const spyA = jest.spyOn(emailService, 'sendActivationEmail');
-      const spyB = jest.spyOn(emailService, 'sendLoginFromNewDeviceEmail');
-      const spyC = jest.spyOn(emailService, 'sendResetPasswordEmail');
+      const spyA = jest
+        .spyOn(emailService, 'sendActivationEmail')
+        .mockResolvedValueOnce(undefined);
+      const spyB = jest
+        .spyOn(emailService, 'sendLoginFromNewDeviceEmail')
+        .mockResolvedValueOnce(undefined);
+      const spyC = jest
+        .spyOn(emailService, 'sendResetPasswordEmail')
+        .mockResolvedValueOnce(undefined);
       await emailService.sendEmailNotification(
         '',
         NotificationTypes.ACCOUNT_ACTIVATION,
@@ -193,9 +199,15 @@ describe('emailService', () => {
     });
 
     it('does nothing when type is unknown', async () => {
-      const spyA = jest.spyOn(emailService, 'sendActivationEmail');
-      const spyB = jest.spyOn(emailService, 'sendLoginFromNewDeviceEmail');
-      const spyC = jest.spyOn(emailService, 'sendResetPasswordEmail');
+      const spyA = jest
+        .spyOn(emailService, 'sendActivationEmail')
+        .mockResolvedValueOnce(undefined);
+      const spyB = jest
+        .spyOn(emailService, 'sendLoginFromNewDeviceEmail')
+        .mockResolvedValueOnce(undefined);
+      const spyC = jest
+        .spyOn(emailService, 'sendResetPasswordEmail')
+        .mockResolvedValueOnce(undefined);
 
       await emailService.sendEmailNotification(
         email,
