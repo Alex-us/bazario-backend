@@ -2,7 +2,7 @@
   "name": "bazario-backend",
   "version": "1.0.0",
   "main": "index.js",
-  "type": "module",
+  "author": "Alex Ustinov<alexander.s.ustinov@gmail.com>",
   "scripts": {
     "test": "jest",
     "build": "tsc",
@@ -13,7 +13,6 @@
     "coverage": "jest --coverage"
   },
   "keywords": [],
-  "author": "Alex Ustinov",
   "license": "ISC",
   "description": "",
   "dependencies": {
