@@ -1,5 +1,7 @@
-import { RESET_PASSWORD_TOKEN_EXP } from '../../account/constants';
-import { RESET_PASSWORD_TOKEN_KEY_PREFIX } from '../constants';
+import {
+  RESET_PASSWORD_TOKEN_EXP,
+  RESET_PASSWORD_TOKEN_KEY_PREFIX,
+} from '../../constants';
 import { redisClient } from './client';
 
 export const getResetPasswordTokenRedisKey = (email: string) => {
@@ -21,7 +23,7 @@ export const getResetPasswordToken = async (email: string): Promise<string | nul
   return redisClient.get(key);
 };
 
-export const deleteResetPasswordToken = async (email: string): Promise<void> => {
+export const deleteResetPasswordTokenFromDB = async (email: string): Promise<void> => {
   const key = getResetPasswordTokenRedisKey(email);
   await redisClient.del(key);
 };

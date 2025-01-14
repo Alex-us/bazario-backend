@@ -1,10 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 
+import { RESPONSE_SUCCESS_MESSAGE, LoggerTags } from '../../constants';
 import { UnauthorizedError } from '../../errors';
-import { RESPONSE_SUCCESS_MESSAGE } from '../../errors/constants';
 import { createTaggedLogger } from '../../logger';
-import { LoggerTags } from '../../logger/constants';
-import { GeneralSuccessResponse } from '../../types';
+import {
+  GeneralSuccessResponse,
+  ActivateUserRequest,
+  RequestResetPasswordRequest,
+  ResetPasswordRequest,
+  validateResetPasswordTokenRequest,
+} from '../../types';
 import { LoggedInUserData } from '../../types/express';
 import {
   activateAccount,
@@ -12,12 +17,6 @@ import {
   resetPassword,
 } from '../services/accountService';
 import { findResetPasswordTokenOrThrow } from '../services/resetPasswordTokenService';
-import {
-  ActivateUserRequest,
-  RequestResetPasswordRequest,
-  ResetPasswordRequest,
-  validateResetPasswordTokenRequest,
-} from '../types';
 
 const MODULE_NAME = 'account_controller';
 const logger = createTaggedLogger([LoggerTags.ACCOUNT, MODULE_NAME]);

@@ -1,8 +1,7 @@
 import express from 'express';
 import request from 'supertest';
 
-import { ACCOUNT_ROUTES } from '../account/constants';
-import { AUTH_ROUTES } from '../authorization/constants';
+import { ACCOUNT_ROUTES, AUTH_ROUTES } from '../constants';
 import { rootRouter } from '../routes';
 
 jest.mock('../authorization/routes', () =>

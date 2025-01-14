@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
+import { LoggerTags } from '../../constants';
 import { createTaggedLogger } from '../../logger';
-import { LoggerTags } from '../../logger/constants';
 
 const MODULE_NAME = 'mongo';
 const logger = createTaggedLogger([LoggerTags.DB, MODULE_NAME]);

@@ -1,12 +1,11 @@
 import { randomUUID } from 'node:crypto';
 
-import { ERROR_MESSAGE } from '../../errors/constants';
+import { ERROR_MESSAGE, LoggerTags } from '../../constants';
 import { ActivationTokenError } from '../../errors/token';
 import { UserAlreadyExistsError, UserNotFoundError } from '../../errors/user';
 import { createTaggedLogger } from '../../logger';
-import { LoggerTags } from '../../logger/constants';
+import { IUser, UserBlockReasons } from '../../types';
 import UserModel from '../models/user';
-import { IUser, UserBlockReasons } from '../types';
 
 const MODULE_NAME = 'user_service';
 const logger = createTaggedLogger([LoggerTags.AUTH, MODULE_NAME]);
@@ -67,7 +66,7 @@ export const updateUserByIdOrThrow = async (
   data: Partial<IUser>
 ): Promise<IUser | null> => {
   logger.info('Updating user', { id });
-  const user = UserModel.findByIdAndUpdate(id, data, { new: true });
+  const user = await UserModel.findByIdAndUpdate(id, data, { new: true });
   if (!user) {
     throw new UserNotFoundError();
   }
@@ -76,7 +75,11 @@ export const updateUserByIdOrThrow = async (
 
 export const updateUserByEmailOrThrow = async (email: string, data: Partial<IUser>) => {
   logger.info('Updating user by email', { email });
-  const user = UserModel.findOneAndUpdate({ email }, { $set: { data } }, { new: true });
+  const user = await UserModel.findOneAndUpdate(
+    { email },
+    { $set: { data } },
+    { new: true }
+  );
   if (!user) {
     throw new UserNotFoundError();
   }

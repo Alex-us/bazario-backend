@@ -1,7 +1,5 @@
-import { REFRESH_TOKEN_EXP } from '../../authorization/constants';
+import { REFRESH_TOKEN_EXP, REFRESH_TOKEN_KEY_PREFIX, LoggerTags } from '../../constants';
 import { createTaggedLogger } from '../../logger';
-import { LoggerTags } from '../../logger/constants';
-import { REFRESH_TOKEN_KEY_PREFIX } from '../constants';
 import { redisClient } from './client';
 
 const MODULE_NAME = 'refresh_token';

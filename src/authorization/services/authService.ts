@@ -9,16 +9,14 @@ import {
   findUserByIdOrThrow,
   setUserActiveOrThrow,
 } from '../../account/services/userService';
-import { IUser, UserBlockReasons } from '../../account/types';
-import { ERROR_MESSAGE } from '../../errors/constants';
+import { ERROR_MESSAGE, LoggerTags } from '../../constants';
 import { UserNotFoundError } from '../../errors/user';
 import { createTaggedLogger } from '../../logger';
-import { LoggerTags } from '../../logger/constants';
 import {
   sendActivationEmail,
   sendLoginFromNewDeviceEmail,
-} from '../../notifications/email/services/emailService';
-import { credentialsData } from '../types';
+} from '../../notifications/services/emailService';
+import { IUser, UserBlockReasons, credentialsData } from '../../types';
 import { generateAccessToken } from './accessTokenService';
 import {
   deleteRefreshToken,
@@ -41,7 +39,10 @@ export const sendUserActivation = async (user: IUser) => {
     const activationToken = randomUUID();
     user.activationToken = activationToken;
     await user.save();
-    await sendActivationEmail(user.email, { token: activationToken }, user.language);
+    await sendActivationEmail(user.email, {
+      token: activationToken,
+      language: user.language,
+    });
     logger.info('Activation sent.', { id: user._id });
   } catch (error) {
     logger.error('Error sending activation email', { id: user?._id, error });
@@ -155,10 +156,11 @@ export const handleNewDeviceLogin = async (
     user.active = false;
     user.blockReason = UserBlockReasons.NEW_DEVICE_LOGIN;
 
-    await sendLoginFromNewDeviceEmail(
-      user.email,
-      { token, ip, userAgent },
-      user.language
-    );
+    await sendLoginFromNewDeviceEmail(user.email, {
+      token,
+      ip,
+      userAgent,
+      language: user.language,
+    });
   }
 };

@@ -6,6 +6,7 @@ import { connectMongo } from '../database/mongo/client';
 import { connectRedis } from '../database/redis/client';
 import { initTranslations } from '../lang/i18n';
 import { initLogger } from '../logger';
+import { notFoundMiddleware, loggerMiddleware } from '../middleware';
 import { rootRouter } from '../routes';
 
 const jsonParser = jest.fn();
@@ -65,9 +66,12 @@ jest.mock(
   '../lang/i18n',
   jest.fn().mockReturnValue({ initTranslations: jest.fn().mockResolvedValue(undefined) })
 );
-const requestLoggerMock = jest.fn();
-jest.mock('../middleware/requestLogger', () =>
-  jest.fn().mockImplementation(requestLoggerMock)
+
+jest.mock('../middleware', () =>
+  jest.fn().mockReturnValue({
+    loggerMiddleware: jest.fn(),
+    notFoundMiddleware: jest.fn(),
+  })
 );
 
 const corsResult = jest.fn();
@@ -84,37 +88,55 @@ describe('Server Initialization', () => {
   });
 
   it('should initialize dotenv.config', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('../server');
     expect(dotenv.config).toHaveBeenCalled();
-    //expect(mockApp.use).toHaveBeenCalledWith(requestLoggerMock);
   });
 
   it('should init logger', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('../server');
     expect(initLogger).toHaveBeenCalled();
   });
 
+  it('should use loggerMiddleware', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require('../server');
+    expect(mockApp.use).toHaveBeenCalledWith(loggerMiddleware);
+  });
+
   it('should use cors parser middleware', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('../server');
     expect(mockApp.use).toHaveBeenCalledWith(corsResult);
   });
 
   it('should use Cookie parser middleware', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('../server');
     expect(mockApp.use).toHaveBeenCalledWith(cookieParserRes);
   });
 
   it('should use JSON parser middleware', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('../server');
     expect(mockApp.use).toHaveBeenCalledWith(jsonParser);
   });
 
+  it('should use 404 middleware', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require('../server');
+    expect(mockApp.use).toHaveBeenCalledWith(notFoundMiddleware);
+  });
+
   it('should use root routes', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('../server');
     expect(mockApp.use).toHaveBeenCalledWith(ROOT_ROUTE, rootRouter);
   });
 
   it('should connect to MongoDB and Redis', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     await require('../server');
     await new Promise(process.nextTick);
     expect(initTranslations).toHaveBeenCalled();

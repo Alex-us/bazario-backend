@@ -1,9 +1,8 @@
+import { ERROR_MESSAGE, LoggerTags } from '../../constants';
 import { UnauthorizedError } from '../../errors';
-import { ERROR_MESSAGE } from '../../errors/constants';
 import { ActivationTokenError } from '../../errors/token';
 import { createTaggedLogger } from '../../logger';
-import { LoggerTags } from '../../logger/constants';
-import { sendResetPasswordEmail } from '../../notifications/email/services/emailService';
+import { sendResetPasswordEmail } from '../../notifications/services/emailService';
 import {
   deleteResetPasswordToken,
   findResetPasswordTokenOrThrow,
@@ -24,7 +23,7 @@ export const requestPasswordReset = async (email: string) => {
   const user = await findUserByEmailOrThrow(email);
 
   const token = await generateResetPasswordToken(user.id);
-  await sendResetPasswordEmail(user.email, { token }, user.language);
+  await sendResetPasswordEmail(user.email, { token, language: user.language });
   logger.info('Password reset requested successfully', { email });
 };
 

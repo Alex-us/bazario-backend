@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import {
+  deleteResetPasswordTokenFromDB,
   getResetPasswordToken,
   saveResetPasswordToken,
 } from '../../database/redis/resetPasswordToken';
@@ -23,5 +24,5 @@ export const findResetPasswordTokenOrThrow = async (
 };
 
 export const deleteResetPasswordToken = async (email: string): Promise<void> => {
-  await deleteResetPasswordToken(email);
+  await deleteResetPasswordTokenFromDB(email);
 };

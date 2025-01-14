@@ -1,11 +1,9 @@
 import jwt, { JsonWebTokenError } from 'jsonwebtoken';
 
-import { ERROR_MESSAGE } from '../../errors/constants';
+import { ERROR_MESSAGE, ACCESS_TOKEN_EXP, LoggerTags } from '../../constants';
 import { AccessTokenError } from '../../errors/token';
 import { createTaggedLogger } from '../../logger';
-import { LoggerTags } from '../../logger/constants';
-import { ACCESS_TOKEN_EXP } from '../constants';
-import { CognitoIdTokenPayload } from '../types';
+import { CognitoIdTokenPayload } from '../../types';
 
 const MODULE_NAME = 'access_token_service';
 const logger = createTaggedLogger([LoggerTags.AUTH, MODULE_NAME]);

@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import Backend from 'i18next-fs-backend';
 import path from 'path';
 
-import { Language } from './constants';
+import { Language } from '../constants';
 
 export const initTranslations = async () => {
   await i18n.use(Backend).init({

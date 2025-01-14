@@ -7,20 +7,23 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
 
-import { ROOT_ROUTE } from './constants';
+import { ROOT_ROUTE, LoggerTags } from './constants';
 import { connectMongo } from './database/mongo/client';
 import { connectRedis } from './database/redis/client';
 import { initTranslations } from './lang/i18n';
-import { LoggerTags } from './logger/constants';
-import errorMiddleware from './middleware/errorHandler';
-import { requestLogger } from './middleware/requestLogger';
+import {
+  loggerMiddleware,
+  errorMiddleware,
+  validationResultMiddleware,
+  notFoundMiddleware,
+} from './middleware';
 import { rootRouter } from './routes';
 //import './config/passport';
 
 const logger = createTaggedLogger([LoggerTags.DB]);
 
 const app = express();
-app.use(requestLogger);
+app.use(loggerMiddleware);
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
@@ -28,9 +31,9 @@ app.use(express.json());
 app.use(ROOT_ROUTE, rootRouter);
 
 //404
-app.use((req, res) => {
-  res.status(404).send('Not Found');
-});
+app.use(notFoundMiddleware);
+
+app.use(validationResultMiddleware);
 
 //errors
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

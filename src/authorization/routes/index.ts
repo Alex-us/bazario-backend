@@ -1,33 +1,29 @@
 import { Router } from 'express';
 import { checkSchema } from 'express-validator';
 
-import extractIp from '../../middleware/extractIp';
-import validationResultHandler from '../../validators/validationResultHandler';
-import { AUTH_ROUTES } from '../constants';
+import { AUTH_ROUTES } from '../../constants';
+import { extractIpMiddleware } from '../../middleware';
 import {
   loginRequestHandler,
   logoutRequestHandler,
   refreshRequestHandler,
   registerRequestHandler,
 } from '../controllers/authController';
-import authMiddleware from '../middleware/authHandler';
-import loginValidatorSchema from '../validators/loginSchema';
-import registerValidatorSchema from '../validators/registerSchema';
+import { authMiddleware } from '../middleware';
+import { loginSchema, registerSchema } from '../validators/schema';
 
 const router = Router();
 
 router.post(
   AUTH_ROUTES.REGISTER,
-  checkSchema(registerValidatorSchema),
-  validationResultHandler,
-  extractIp,
+  checkSchema(registerSchema),
+  extractIpMiddleware,
   registerRequestHandler
 );
 router.post(
   AUTH_ROUTES.LOGIN,
-  checkSchema(loginValidatorSchema),
-  validationResultHandler,
-  extractIp,
+  checkSchema(loginSchema),
+  extractIpMiddleware,
   loginRequestHandler
 );
 router.post(AUTH_ROUTES.LOGOUT, authMiddleware, logoutRequestHandler);

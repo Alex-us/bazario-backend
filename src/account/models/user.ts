@@ -1,9 +1,8 @@
 import bcrypt from 'bcryptjs';
 import { Schema, model } from 'mongoose';
 
-import { Language } from '../../lang/constants';
-import { FACEBOOK_ID_KEY, GOOGLE_ID_KEY } from '../constants';
-import { IUser } from '../types';
+import { Language, FACEBOOK_ID_KEY, GOOGLE_ID_KEY } from '../../constants';
+import { IUser } from '../../types';
 
 const UserSchema = new Schema<IUser>({
   email: { type: String, required: true, unique: true },

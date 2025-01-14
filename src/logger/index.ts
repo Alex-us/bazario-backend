@@ -27,6 +27,14 @@ export const logglyFormat = combine(
   json()
 );
 
+export const logglyConfig = {
+  token: String(process.env.LOGGLY_TOKEN),
+  subdomain: String(process.env.LOGGLY_SUBDOMAIN),
+  tags: ['Backend'],
+  json: true,
+  format: logglyFormat,
+};
+
 export const initLogger = (force?: boolean) => {
   if (force || !logger) {
     logger = createLogger({
@@ -35,18 +43,10 @@ export const initLogger = (force?: boolean) => {
     });
 
     if (process.env.NODE_ENV === 'production') {
-      logger.add(
-        new Loggly({
-          token: String(process.env.LOGGLY_TOKEN),
-          subdomain: String(process.env.LOGGLY_SUBDOMAIN),
-          tags: ['Backend'],
-          json: true,
-          format: logglyFormat,
-        })
-      );
+      logger.add(new Loggly(logglyConfig));
     }
   }
-}
+};
 
 export const createTaggedLogger = (tags: string[]): Logger => {
   if (!logger) {
@@ -58,4 +58,4 @@ export const createTaggedLogger = (tags: string[]): Logger => {
   });
 };
 
-export {logger};
+export { logger };

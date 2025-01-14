@@ -1,19 +1,55 @@
-name: Unit tests with coverage
+name: CI Pipeline
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup Node.js
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Set up Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22'
-      - run: npm install
-      - run: npm test -- --coverage
+          node-version: 18
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Lint the code
+      - name: Lint code
+        run: npm run lint
+
+      # TypeScript type checking
+      - name: TypeScript type check
+        run: npm run type-check
+
+      # Run tests
+      - name: Run tests
+        env:
+          NODE_ENV: test
+        run: npm run test
+
+      # Generate coverage report
+      - name: Generate coverage report
+        if: always()
+        run: npm run coverage
+
+      # Upload coverage report to GitHub
+      - name: Upload coverage to GitHub
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/

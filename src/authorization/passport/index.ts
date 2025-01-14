@@ -3,15 +3,15 @@ import { Strategy as FacebookStrategy } from 'passport-facebook';
 import { Strategy as GoogleStrategy, VerifyCallback } from 'passport-google-oauth20';
 
 import User from '../../account/models/user';
-import { createTaggedLogger } from '../../logger';
-import { LoggerTags } from '../../logger/constants';
 import {
   FACEBOOK_CALLBACK_URL,
   FACEBOOK_PROFILE_FIELDS,
   GOOGLE_CALLBACK_URL,
   PASSPORT_USER_QUERY_ID,
   PassportStrategy,
-} from '../constants';
+  LoggerTags,
+} from '../../constants';
+import { createTaggedLogger } from '../../logger';
 
 const MODULE_NAME = 'passport';
 

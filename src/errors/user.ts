@@ -1,4 +1,4 @@
-import { ERROR_MESSAGE } from './constants';
+import { ERROR_MESSAGE } from '../constants';
 
 export class UserError extends Error {}
 

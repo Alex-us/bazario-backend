@@ -1,9 +1,8 @@
 import { Router } from 'express';
 
-import { ACCOUNT_ROUTES } from './account/constants';
 import accountRoutes from './account/routes';
-import { AUTH_ROUTES } from './authorization/constants';
 import authRoutes from './authorization/routes';
+import { ACCOUNT_ROUTES, AUTH_ROUTES } from './constants';
 
 const rootRouter = Router();
 

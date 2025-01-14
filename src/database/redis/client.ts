@@ -1,8 +1,7 @@
 import { createClient, RedisClientType } from 'redis';
 
+import { REDIS_CONNECTION_TIMEOUT, LoggerTags } from '../../constants';
 import { createTaggedLogger } from '../../logger';
-import { LoggerTags } from '../../logger/constants';
-import { REDIS_CONNECTION_TIMEOUT } from '../constants';
 
 const MODULE_NAME = 'redis';
 const logger = createTaggedLogger([LoggerTags.DB, MODULE_NAME]);

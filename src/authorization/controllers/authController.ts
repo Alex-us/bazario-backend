@@ -1,19 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { RESPONSE_SUCCESS_MESSAGE } from '../../errors/constants';
+import {
+  RESPONSE_SUCCESS_MESSAGE,
+  AUTH_COOKIE_NAME,
+  REFRESH_TOKEN_EXP,
+  LoggerTags,
+} from '../../constants';
 import { createTaggedLogger } from '../../logger';
-import { LoggerTags } from '../../logger/constants';
-import { GeneralSuccessResponse } from '../../types';
-import { LoggedInUserData } from '../../types/express';
-import { AUTH_COOKIE_NAME, REFRESH_TOKEN_EXP } from '../constants';
 import {
-  loginUser,
-  logoutUser,
-  refreshUserToken,
-  registerUser,
-} from '../services/authService';
-import { validateRefreshTokenOrThrow } from '../services/refreshTokenService';
-import {
+  GeneralSuccessResponse,
   LoginRequest,
   LoginResponse,
   LogoutRequest,
@@ -21,7 +16,15 @@ import {
   RefreshTokenResponse,
   RegisterRequest,
   RegisterResponse,
-} from '../types';
+} from '../../types';
+import { LoggedInUserData } from '../../types/express';
+import {
+  loginUser,
+  logoutUser,
+  refreshUserToken,
+  registerUser,
+} from '../services/authService';
+import { validateRefreshTokenOrThrow } from '../services/refreshTokenService';
 
 const MODULE_NAME = 'auth_controller';
 const logger = createTaggedLogger([LoggerTags.AUTH, MODULE_NAME]);
