@@ -2,17 +2,17 @@
   "name": "bazario-backend",
   "version": "1.0.0",
   "main": "index.js",
+  "author": "Alex Ustinov<alexander.s.ustinov@gmail.com>",
   "scripts": {
     "test": "jest",
     "build": "tsc",
     "start": "npm run build && node dist/server.js",
     "dev": "tsc && nodemon --watch 'src/**/*.ts' --exec 'node dist/server.js'",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint --fix",
     "type-check": "tsc --noEmit",
     "coverage": "jest --coverage"
   },
   "keywords": [],
-  "author": "Alex Ustinov",
   "license": "ISC",
   "description": "",
   "dependencies": {
@@ -22,6 +22,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "express-rate-limit": "^7.5.0",
     "express-validator": "^7.2.0",
     "geoip-lite": "^1.4.10",
     "i18next": "^24.2.1",

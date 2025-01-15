@@ -1,11 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-import { LoggerTags } from '../constants';
+import { LoggerTags, REQUESTS_AMOUNT_LIMIT } from '../constants';
 import { ApiError, BadRequestError } from '../errors';
 import { TokenError } from '../errors/token';
 import { UserError } from '../errors/user';
 import { createTaggedLogger } from '../logger';
+import { createRateLimiter } from './rateLimiter';
 
 const MODULE_NAME = 'middleware';
 const logger = createTaggedLogger([LoggerTags.EXPRESS, MODULE_NAME]);
@@ -62,5 +63,7 @@ export const validationResultMiddleware = (
 export const notFoundMiddleware = (req: Request, res: Response) => {
   res.status(404).send('Not Found');
 };
+
+export const requestsLimiterMiddleware = createRateLimiter(REQUESTS_AMOUNT_LIMIT, logger);
 
 export * from './logger';

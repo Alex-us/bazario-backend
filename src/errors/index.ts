@@ -20,3 +20,9 @@ export class BadRequestError extends ApiError {
     super(400, message);
   }
 }
+
+export class TooManyRequestsError extends ApiError {
+  constructor() {
+    super(429, ERROR_MESSAGE.REQUESTS_LIMIT_EXCEEDED);
+  }
+}

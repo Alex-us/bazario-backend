@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { LoggerTags } from '../../constants';
+import { LoggerTags, REQUESTS_AMOUNT_LIMIT_LOGIN } from '../../constants';
 import { UnauthorizedError } from '../../errors';
 import { createTaggedLogger } from '../../logger';
+import { createRateLimiter } from '../../middleware/rateLimiter';
 import { validateAccessTokenOrThrow } from '../services/accessTokenService';
 
 const MODULE_NAME = 'auth_middleware';
@@ -37,3 +38,8 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     next(new UnauthorizedError());
   }
 };
+
+export const loginLimiterMiddleware = createRateLimiter(
+  REQUESTS_AMOUNT_LIMIT_LOGIN,
+  logger
+);

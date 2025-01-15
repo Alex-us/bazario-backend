@@ -1,8 +1,10 @@
 import express from 'express';
 import request from 'supertest';
 
+import { loginLimiterMiddleware } from '../../authorization/middleware';
 import authRoutes from '../../authorization/routes';
 import { AUTH_ROUTES } from '../../constants';
+import { extractIpMiddleware } from '../../middleware';
 
 jest.mock('../../authorization/controllers/authController', () => ({
   registerRequestHandler: jest.fn((req, res) =>
@@ -22,7 +24,10 @@ jest.mock('../../authorization/controllers/authController', () => ({
 }));
 
 jest.mock('../../authorization/middleware', () => {
-  return { authMiddleware: jest.fn((req, res, next) => next()) };
+  return {
+    authMiddleware: jest.fn((req, res, next) => next()),
+    loginLimiterMiddleware: jest.fn((req, res, next) => next()),
+  };
 });
 jest.mock('../../middleware', () => {
   return {
@@ -59,6 +64,8 @@ describe('Auth Routes', () => {
         password: 'Password123!',
       });
 
+    expect(loginLimiterMiddleware).toHaveBeenCalled();
+    expect(extractIpMiddleware).toHaveBeenCalled();
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       token: 'access_token',

@@ -54,7 +54,16 @@ describe('Redis Client Module', () => {
   });
 
   describe('initRedisClient', () => {
+    it('throws an error if Redis client is not initialized', async () => {
+      (createClient as jest.Mock).mockReturnValueOnce(undefined);
+      await expect(redisModule.connectRedis()).rejects.toThrow(
+        'Redis client not initialized'
+      );
+    });
+
     it('should initialize Redis client and register events', () => {
+      const spy = jest.spyOn(redisModule, 'registerRedisEvents');
+
       redisModule.initRedisClient();
 
       expect(createClient).toHaveBeenCalledWith({
@@ -67,16 +76,8 @@ describe('Redis Client Module', () => {
           keepAliveInitialDelay: REDIS_CONNECTION_TIMEOUT,
         },
       });
-      expect(mockRedisClient.on).toHaveBeenCalledTimes(6);
-      expect(mockRedisClient.on).toHaveBeenCalledWith('connect', expect.any(Function));
-      expect(mockRedisClient.on).toHaveBeenCalledWith('ready', expect.any(Function));
-      expect(mockRedisClient.on).toHaveBeenCalledWith(
-        'reconnecting',
-        expect.any(Function)
-      );
-      expect(mockRedisClient.on).toHaveBeenCalledWith('end', expect.any(Function));
-      expect(mockRedisClient.on).toHaveBeenCalledWith('disconnect', expect.any(Function));
-      expect(mockRedisClient.on).toHaveBeenCalledWith('error', expect.any(Function));
+      expect(redisModule.registerRedisEvents).toHaveBeenCalledWith(mockRedisClient);
+      spy.mockRestore();
     });
 
     it('should not reinitialize Redis client if already initialized', () => {
@@ -91,7 +92,6 @@ describe('Redis Client Module', () => {
       await redisModule.connectRedis();
 
       expect(mockRedisClient.connect).toHaveBeenCalled();
-      expect(mockLogger.info).toHaveBeenCalledWith('Redis connected successfully');
     });
 
     it('should not reconnect if Redis is already connected', async () => {

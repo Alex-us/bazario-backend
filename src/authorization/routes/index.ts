@@ -9,7 +9,7 @@ import {
   refreshRequestHandler,
   registerRequestHandler,
 } from '../controllers/authController';
-import { authMiddleware } from '../middleware';
+import { authMiddleware, loginLimiterMiddleware } from '../middleware';
 import { loginSchema, registerSchema } from '../validators/schema';
 
 const router = Router();
@@ -22,6 +22,7 @@ router.post(
 );
 router.post(
   AUTH_ROUTES.LOGIN,
+  loginLimiterMiddleware,
   checkSchema(loginSchema),
   extractIpMiddleware,
   loginRequestHandler

@@ -1,0 +1,3 @@
+export const REQUESTS_RATE_LIMITER_WINDOW = 15 * 60 * 1000; //15 min
+export const REQUESTS_AMOUNT_LIMIT_LOGIN = 5;
+export const REQUESTS_AMOUNT_LIMIT = 100;

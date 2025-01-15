@@ -7,3 +7,4 @@ export * from './logger';
 export * from './lang';
 export * from './account';
 export * from './notifications';
+export * from './middleware';

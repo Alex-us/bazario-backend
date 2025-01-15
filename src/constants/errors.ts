@@ -19,6 +19,7 @@ export enum ERROR_MESSAGE {
   INVALID_NAME = 'invalid_name',
   EMPTY_ACCESS_TOKEN = 'empty_access_token',
   EMPTY_REFRESH_TOKEN = 'empty_refresh_token',
+  REQUESTS_LIMIT_EXCEEDED = 'requests_limit_exceeded',
 }
 
 export enum RESPONSE_SUCCESS_MESSAGE {

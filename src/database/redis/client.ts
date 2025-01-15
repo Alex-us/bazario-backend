@@ -8,7 +8,7 @@ const logger = createTaggedLogger([LoggerTags.DB, MODULE_NAME]);
 
 let redisClient: RedisClientType;
 
-const initRedisClient = () => {
+export const initRedisClient = () => {
   if (!redisClient) {
     redisClient = createClient({
       username: process.env.REDIS_USER,
@@ -20,15 +20,15 @@ const initRedisClient = () => {
         keepAliveInitialDelay: REDIS_CONNECTION_TIMEOUT,
       },
     });
-    registerRedisEvents(redisClient);
+    if (redisClient) {
+      registerRedisEvents(redisClient);
+    }
   }
 };
 
-const registerRedisEvents = (client: RedisClientType) => {
+export const registerRedisEvents = (client: RedisClientType) => {
   if (!client.listeners('connect').length) {
-    client.on('connect', () =>
-      logger.info(`Redis client connected to ${process.env.REDIS_URI}:${11029}`)
-    );
+    client.on('connect', () => logger.info(`Redis client connected successfully`));
     client.on('ready', () => logger.info('Redis client is ready'));
     client.on('reconnecting', () => logger.warn('Redis client reconnecting'));
     client.on('end', () => logger.warn('Redis client connection ended'));
@@ -37,7 +37,7 @@ const registerRedisEvents = (client: RedisClientType) => {
   }
 };
 
-const connectRedis = async () => {
+export const connectRedis = async () => {
   if (redisClient && redisClient.isOpen) {
     logger.info('Redis client already connected');
     return;
@@ -51,14 +51,13 @@ const connectRedis = async () => {
     }
 
     await redisClient.connect();
-    logger.info('Redis connected successfully');
   } catch (err) {
     logger.error('Error connecting to Redis', { error: err });
     throw err;
   }
 };
 
-const disconnectRedis = async () => {
+export const disconnectRedis = async () => {
   if (!redisClient) {
     logger.info('Redis client not connected');
     return;
@@ -70,10 +69,4 @@ const disconnectRedis = async () => {
   logger.info('Redis client disconnected');
 };
 
-export {
-  redisClient,
-  connectRedis,
-  initRedisClient,
-  registerRedisEvents,
-  disconnectRedis,
-};
+export { redisClient };
