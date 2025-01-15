@@ -16,6 +16,7 @@ import {
   errorMiddleware,
   validationResultMiddleware,
   notFoundMiddleware,
+  requestsLimiterMiddleware,
 } from './middleware';
 import { rootRouter } from './routes';
 //import './config/passport';
@@ -23,6 +24,8 @@ import { rootRouter } from './routes';
 const logger = createTaggedLogger([LoggerTags.DB]);
 
 const app = express();
+
+app.use(requestsLimiterMiddleware);
 app.use(loggerMiddleware);
 app.use(cors());
 app.use(cookieParser());

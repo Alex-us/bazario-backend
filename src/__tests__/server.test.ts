@@ -6,7 +6,11 @@ import { connectMongo } from '../database/mongo/client';
 import { connectRedis } from '../database/redis/client';
 import { initTranslations } from '../lang/i18n';
 import { initLogger } from '../logger';
-import { notFoundMiddleware, loggerMiddleware } from '../middleware';
+import {
+  notFoundMiddleware,
+  loggerMiddleware,
+  requestsLimiterMiddleware,
+} from '../middleware';
 import { rootRouter } from '../routes';
 
 const jsonParser = jest.fn();
@@ -71,6 +75,7 @@ jest.mock('../middleware', () =>
   jest.fn().mockReturnValue({
     loggerMiddleware: jest.fn(),
     notFoundMiddleware: jest.fn(),
+    requestsLimiterMiddleware: jest.fn(),
   })
 );
 
@@ -97,6 +102,12 @@ describe('Server Initialization', () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('../server');
     expect(initLogger).toHaveBeenCalled();
+  });
+
+  it('should use requestsLimiterMiddleware', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require('../server');
+    expect(mockApp.use).toHaveBeenCalledWith(requestsLimiterMiddleware);
   });
 
   it('should use loggerMiddleware', () => {
